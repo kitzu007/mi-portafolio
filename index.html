@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Fuente Retro para Game Dev -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <!-- FontAwesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Archivo CSS -->
@@ -16,7 +18,35 @@
 <body>
 
     <!-- Contenedor de Partículas (Fondo) -->
+    <!-- Contenedor de Partículas (Fondo) -->
     <div id="tsparticles"></div>
+
+    <!-- FONDO RETRO GRID (Oculto por defecto) -->
+    <div id="retro-bg" class="hidden">
+        <div class="retro-grid"></div>
+        <!-- retro-sun eliminado -->
+    </div>
+
+    <!-- FILTROS SVG (Invisibles) -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="pixelate" x="0" y="0">
+                <feFlood x="4" y="4" height="2" width="2"/>
+                <feComposite width="10" height="10"/>
+                <feTile result="a"/>
+                <feComposite in="SourceGraphic" in2="a" operator="in"/>
+                <feMorphology operator="dilate" radius="2"/>
+            </filter>
+            <!-- Filtro Pixelado V2 (Mas robusto) -->
+            <filter id="pixelate-robust">
+                <feFlood x="2" y="2" height="1" width="1"/>
+                <feComposite width="4" height="4"/>
+                <feTile result="a"/>
+                <feComposite in="SourceGraphic" in2="a" operator="in"/>
+                <feMorphology operator="dilate" radius="2"/>
+            </filter>
+        </defs>
+    </svg>
 
     <!-- PANTALLA DE BIENVENIDA (Intro) -->
     <section id="intro-screen" class="intro-overlay">

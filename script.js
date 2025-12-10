@@ -62,10 +62,12 @@ const projectsData = [
 // ==========================================
 // REFERENCIAS A ELEMENTOS DE LA PANTALLA
 // ==========================================
-const splitLanding = document.getElementById('split-landing'); // Pantalla principal
-const contentOverlay = document.getElementById('content-overlay'); // Pantalla de detalles (oculta)
-const dynamicContent = document.getElementById('dynamic-content'); // Donde ponemos los proyectos
-const backBtn = document.getElementById('back-btn'); // Botón "Volver"
+const splitLanding = document.getElementById('split-landing'); 
+const contentOverlay = document.getElementById('content-overlay'); 
+const dynamicContent = document.getElementById('dynamic-content'); 
+const backBtn = document.getElementById('back-btn'); 
+const retroBg = document.getElementById('retro-bg'); // NUEVO: Referencia al fondo retro
+
 
 // Seleccionamos las 3 columnas principales
 const columns = document.querySelectorAll('.split-item'); 
@@ -105,6 +107,14 @@ const gameParticles = {
         size: { value: 5, random: true },
         move: { enable: true, speed: 4, direction: "bottom", straight: false, out_mode: "out" }, // Lluvia
         line_linked: { enable: false }
+    },
+    interactivity: {
+        events: {
+            onhover: { enable: true, mode: "repulse" }, // Reacción al mouse
+        },
+        modes: {
+            repulse: { distance: 100, duration: 0.4 }
+        }
     }
 };
 
@@ -141,6 +151,9 @@ const dataParticles = {
 document.addEventListener('DOMContentLoaded', () => {
     // Iniciamos las partículas del fondo
     tsParticles.load("tsparticles", landingParticles);
+    
+    // Asegurar que el fondo retro esté oculto al inicio
+    if(retroBg) retroBg.classList.add('hidden');
 });
 
 // 2. EVENTOS DE CLIC EN LAS COLUMNAS
@@ -187,6 +200,11 @@ backIntroBtn.addEventListener('click', () => {
         splitLanding.style.display = 'flex';
         // Restaurar partículas del fondo original
         tsParticles.load("tsparticles", landingParticles);
+        retroBg.classList.add('hidden'); // NUEVO: Asegurar que se oculta el fondo retro
+        
+        // Detener Snake
+        if(gameInterval) clearInterval(gameInterval);
+        gameRunning = false;
     }
 });
 
@@ -216,6 +234,13 @@ backBtn.addEventListener('click', () => {
     // Restaurar partículas iniciales
     tsParticles.load("tsparticles", landingParticles);
 
+    // Detener juego Snake si está corriendo
+    if(gameInterval) clearInterval(gameInterval);
+    gameRunning = false;
+
+    // NUEVO: Ocultar el fondo retro al salir
+    retroBg.classList.add('hidden');
+
     // Mostrar de nuevo la flecha de "Volver a Bienvenida"
     backIntroBtn.style.display = 'flex';
 });
@@ -224,56 +249,230 @@ backBtn.addEventListener('click', () => {
 // FUNCIONES AUXILIARES
 // ==========================================
 
+
+
 function openDetails(category) {
-    // 1. Ocultar la pantalla principal y la flecha de intro
+    // 1. Ocultar la pantalla principal y flecha
     splitLanding.style.display = 'none';
-    backIntroBtn.style.display = 'none'; // Ocultar flecha
+    backIntroBtn.style.display = 'none'; 
     
     // 2. Mostrar la pantalla de detalles
     contentOverlay.classList.remove('hidden');
     
-    // 3. Cambiar las partículas según la categoría
-    if (category === 'gamedev') tsParticles.load("tsparticles", gameParticles);
+    // 3. Cambiar partículas y fondo
+    if (category === 'gamedev') {
+        tsParticles.load("tsparticles", gameParticles);
+        retroBg.classList.remove('hidden');
+    } else {
+        retroBg.classList.add('hidden');
+    }
+
     if (category === 'fullstack') tsParticles.load("tsparticles", stackParticles);
     if (category === 'database') tsParticles.load("tsparticles", dataParticles);
 
-    // 4. Buscar los proyectos de esa categoría
-    // Filtramos la lista 'projectsData' buscando coincidencias
+    // 4. Buscar proyectos
     const filtered = projectsData.filter(item => item.category === category);
 
-    // 5. Crear el HTML de las tarjetas
+    // 5. Generar HTML (LÓGICA DIFERENCIADA PARA GAME DEV)
     let htmlContent = `<h2 style="margin-bottom:20px; color:white;">Proyectos de ${category.toUpperCase()}</h2>`;
-    htmlContent += `<div class="projects-grid">`;
 
-    // Recorremos cada proyecto encontrado
-    filtered.forEach(proj => {
-        htmlContent += `
-            <div class="project-card">
-                <div class="project-img-box">
-                    <img src="${proj.image}" alt="${proj.title}">
-                </div>
-                <div class="project-info">
-                    <h3 style="color:white; margin-bottom:10px;">${proj.title}</h3>
-                    <div style="margin-bottom:10px;">
-                        ${proj.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+    if (category === 'gamedev') {
+        // --- LAYOUT DIVIDIDO PARA GAME DEV ---
+        htmlContent += `<div class="gamedev-container">`;
+        
+        // Columna Izquierda: Proyectos
+        htmlContent += `<div class="projects-col">`;
+        filtered.forEach(proj => {
+            htmlContent += `
+                <div class="project-card pixel-card">
+                    <div class="project-img-box">
+                        <img src="${proj.image}" alt="${proj.title}">
                     </div>
-                    <p style="color:#aaa; margin-bottom:15px;">${proj.description}</p>
-                    <a href="${proj.link}" class="project-btn">Ver Proyecto</a>
+                    <div class="project-info">
+                        <h3 style="color:white; margin-bottom:10px;">${proj.title}</h3>
+                        <div style="margin-bottom:10px;">
+                            ${proj.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                        <p style="color:#aaa; margin-bottom:15px;">${proj.description}</p>
+                        <a href="${proj.link}" class="project-btn">Ver Proyecto</a>
+                    </div>
                 </div>
+            `;
+        });
+        htmlContent += `</div>`; // Fin projects-col
+
+        // Columna Derecha: Juego Snake
+        htmlContent += `
+            <div class="game-col">
+                <div class="game-score">SCORE: <span id="score">0</span></div>
+                <canvas id="snake-canvas" width="300" height="300"></canvas>
+                <button id="start-game-btn" class="game-btn" style="display:block;">JUGAR</button>
+                <p class="game-instructions">Usa las flechas del teclado ⬆️⬇️⬅️➡️</p>
+                <p id="game-over-msg" style="color:red; display:none; font-family:'Press Start 2P'; margin-top:10px;">GAME OVER</p>
             </div>
         `;
-    });
 
-    htmlContent += `</div>`; // Cerramos el div grid
+        htmlContent += `</div>`; // Fin gamedev-container
 
-    // 5. Inyectar el HTML en la página (si existe el contenedor dinámico)
-    // Nota: En index.html necesitamos crear este contenedor si lo borré sin querer en el paso anterior.
-    // Vamos a chequearlo y crearlo dinámicamente si falta.
+    } else {
+        // --- LAYOUT NORMAL (Full Stack / Database) ---
+        htmlContent += `<div class="projects-grid">`;
+        filtered.forEach(proj => {
+            htmlContent += `
+                <div class="project-card">
+                    <div class="project-img-box">
+                        <img src="${proj.image}" alt="${proj.title}">
+                    </div>
+                    <div class="project-info">
+                        <h3 style="color:white; margin-bottom:10px;">${proj.title}</h3>
+                        <div style="margin-bottom:10px;">
+                            ${proj.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                        </div>
+                        <p style="color:#aaa; margin-bottom:15px;">${proj.description}</p>
+                        <a href="${proj.link}" class="project-btn">Ver Proyecto</a>
+                    </div>
+                </div>
+            `;
+        });
+        htmlContent += `</div>`;
+    }
+
+    // Inyectar HTML
     let container = document.getElementById('dynamic-area');
     if (!container) {
         container = document.createElement('div');
         container.id = 'dynamic-area';
-        contentOverlay.appendChild(container);
+        contentOverlay.appendChild(container); // Esto podría duplicar si no se limpia, pero openDetails suele llamarse fresco
     }
     container.innerHTML = htmlContent;
+
+    // INICIAR JUEGO
+    if (category === 'gamedev') {
+        setupSnakeGame();
+    }
+}
+
+// ==========================================
+// JUEGO SNAKE
+// ==========================================
+let gameInterval;
+let gameRunning = false;
+
+function setupSnakeGame() {
+    const canvas = document.getElementById('snake-canvas');
+    const ctx = canvas.getContext('2d');
+    const roleBtn = document.getElementById('start-game-btn');
+    const scoreEl = document.getElementById('score');
+    const msgEl = document.getElementById('game-over-msg');
+
+    // Configuración
+    const box = 20; // Tamaño de cada cuadro
+    let snake = [];
+    snake[0] = { x: 9 * box, y: 10 * box }; // Posición inicial
+
+    let food = {
+        x: Math.floor(Math.random() * 15) * box,
+        y: Math.floor(Math.random() * 15) * box
+    };
+
+    let score = 0;
+    let d; // Dirección
+
+    // Controles
+    document.addEventListener('keydown', direction);
+
+    function direction(event) {
+        if (!gameRunning) return;
+        
+        let key = event.keyCode;
+        if(key == 37 && d != "RIGHT") d = "LEFT";
+        else if(key == 38 && d != "DOWN") d = "UP";
+        else if(key == 39 && d != "LEFT") d = "RIGHT";
+        else if(key == 40 && d != "UP") d = "DOWN";
+        
+        // Prevenir scroll con flechas
+        if([37, 38, 39, 40].indexOf(key) > -1) {
+            event.preventDefault();
+        }
+    }
+
+    function draw() {
+        // Limpiar canvas
+        ctx.fillStyle = "#111";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dibujar Serpiente
+        for(let i = 0; i < snake.length; i++) {
+            ctx.fillStyle = (i == 0) ? "#00ff9d" : "#00cc7d"; // Cabeza vs Cuerpo
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+        }
+
+        // Dibujar Comida
+        ctx.fillStyle = "#ff00cc";
+        ctx.fillRect(food.x, food.y, box, box);
+
+        // Posición actual cabeza
+        let snakeX = snake[0].x;
+        let snakeY = snake[0].y;
+
+        // Mover
+        if(d == "LEFT") snakeX -= box;
+        if(d == "UP") snakeY -= box;
+        if(d == "RIGHT") snakeX += box;
+        if(d == "DOWN") snakeY += box;
+
+        // Comer
+        if(snakeX == food.x && snakeY == food.y) {
+            score++;
+            scoreEl.innerText = score;
+            food = {
+                x: Math.floor(Math.random() * 15) * box,
+                y: Math.floor(Math.random() * 15) * box
+            }
+        } else {
+            // Quitar cola
+            snake.pop();
+        }
+
+        // Nueva cabeza
+        let newHead = { x: snakeX, y: snakeY };
+
+        // Game Over (Chocar pared o cuerpo)
+        if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
+            clearInterval(gameInterval);
+            gameRunning = false;
+            msgEl.style.display = 'block';
+            roleBtn.innerText = 'REINTENTAR';
+            roleBtn.style.display = 'block';
+            return;
+        }
+
+        snake.unshift(newHead);
+    }
+
+    function collision(head, array) {
+        for(let i = 0; i < array.length; i++) {
+            if(head.x == array[i].x && head.y == array[i].y) return true;
+        }
+        return false;
+    }
+
+    // Botón Jugar/Reintentar
+    roleBtn.addEventListener('click', () => {
+        // Reset
+        snake = [];
+        snake[0] = { x: 9 * box, y: 10 * box };
+        score = 0;
+        scoreEl.innerText = score;
+        d = undefined; // Sin movimiento inicial
+        msgEl.style.display = 'none';
+        roleBtn.style.display = 'none';
+        
+        gameRunning = true;
+        if(gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(draw, 100);
+    });
 }
