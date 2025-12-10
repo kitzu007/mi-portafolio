@@ -1,0 +1,440 @@
+:root {
+    --bg-dark: #0a0a0a; /* Fondo muy oscuro */
+    --color-text-main: #ffffff; /* Texto blanco principal */
+    --color-text-muted: #cccccc; /* Texto gris claro */
+    
+    /* COLORES NEÓN */
+    --color-game: #00ff9d;   /* Verde para videojuegos */
+    --color-stack: #00f3ff;  /* Azul cian para web */
+    --color-data: #ff5500;   /* Rojo/Naranja para datos */
+    
+    --font-main: 'Outfit', sans-serif; /* Tu fuente moderna */
+    --transition-speed: 0.5s; /* Velocidad de animaciones */
+}
+
+/* Configuraciones básicas (Reset) */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--color-text-main);
+    font-family: var(--font-main);
+    overflow: hidden; /* Evita scroll en la pantalla principal */
+    height: 100vh;
+}
+
+/* --- FONDO DE PARTÍCULAS --- */
+#tsparticles {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Detrás del texto pero delante del fondo negro */
+    pointer-events: none; /* Deja pasar los clics */
+}
+
+/* --- DISEÑO DE PANTALLA DIVIDIDA (SPLIT LANDING) --- */
+.split-container {
+    display: flex; /* Pone las columnas una al lado de otra */
+    width: 100%;
+    height: 100vh; /* Altura completa de la ventana */
+    position: relative;
+    z-index: 2; /* Encima de las partículas */
+}
+
+/* Estilo común para cada columna */
+.split-item {
+    flex: 1; /* Todas empiezan con el mismo ancho */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: flex var(--transition-speed) ease; /* Animación suave al estirar */
+    cursor: pointer;
+    border-right: 1px solid rgba(255,255,255,0.05); /* Línea divisoria sutil */
+    overflow: hidden;
+}
+
+/* Quitar borde a la última columna */
+.split-item:last-child {
+    border-right: none;
+}
+
+/* COLOR DE FONDO (Gradientes sutiles para cada sección) */
+.game {
+    background: linear-gradient(to bottom, transparent, rgba(0, 255, 157, 0.05));
+}
+.stack {
+    background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.05));
+}
+.data {
+    background: linear-gradient(to bottom, transparent, rgba(255, 85, 0, 0.05));
+}
+
+/* EFECTO HOVER: La columna seleccionada crece */
+.split-item:hover {
+    flex: 2.5; /* Se hace más ancha */
+}
+
+/* CONTENIDO DENTRO DE LA COLUMNA */
+.content {
+    position: relative;
+    z-index: 3;
+    transition: transform var(--transition-speed);
+}
+
+/* El icono grande */
+.icon-large {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+    transition: color 0.3s;
+}
+
+/* Colores de Iconos por defecto */
+.game .icon-large { color: rgba(255,255,255, 0.5); }
+.stack .icon-large { color: rgba(255,255,255, 0.5); }
+.data .icon-large { color: rgba(255,255,255, 0.5); }
+
+/* Colores de Iconos al hacer HOVER en la columna */
+.game:hover .icon-large { color: var(--color-game); text-shadow: 0 0 20px var(--color-game); }
+.stack:hover .icon-large { color: var(--color-stack); text-shadow: 0 0 20px var(--color-stack); }
+.data:hover .icon-large { color: var(--color-data); text-shadow: 0 0 20px var(--color-data); }
+
+/* Títulos */
+h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+p {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+}
+
+/* Botón Explorar (Aparece en Hover) */
+.explore-btn {
+    margin-top: 2rem;
+    padding: 0.8rem 2rem;
+    border: 2px solid #fff;
+    background: transparent;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 50px;
+    opacity: 0; /* Oculto por defecto */
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+/* Hacer visible el botón cuando pasas el mouse por la columna */
+.split-item:hover .explore-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Colores de botones específicos al Hover */
+.game:hover .explore-btn { border-color: var(--color-game); color: var(--color-game); }
+.stack:hover .explore-btn { border-color: var(--color-stack); color: var(--color-stack); }
+.data:hover .explore-btn { border-color: var(--color-data); color: var(--color-data); }
+
+
+/* --- OVERLAY DE DETALLE (Pantalla Completa al entrar) --- */
+.hidden {
+    display: none; /* Ocultar cosas que no se usan */
+}
+
+#content-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000; /* Fondo negro sólido para leer bien */
+    z-index: 100; /* Encima de todo */
+    overflow-y: auto; /* Permite bajar si hay mucho texto */
+    padding: 40px;
+    animation: fadeIn 0.5s;
+}
+
+/* Botón Volver */
+.back-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+}
+.back-btn:hover { text-decoration: underline; }
+
+/* Grid de Proyectos */
+.projects-grid {
+    display: grid;
+     /* Columnas automáticas responsive */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.project-card {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+.project-card:hover {
+    transform: translateY(-5px);
+    border-color: white;
+}
+
+.project-img-box img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.project-info {
+    padding: 1.5rem;
+}
+
+.tag {
+    background: #222;
+    color: #ccc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-right: 5px;
+}
+
+.project-btn {
+    display: block;
+    margin-top: 1rem;
+    text-align: center;
+    padding: 10px;
+    background: #fff;
+    color: #000;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* RESPONSIVE (Móvil) */
+@media (max-width: 768px) {
+    .split-container {
+        flex-direction: column; /* En celular, una columna debajo de otra */
+    }
+    .split-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .explore-btn {
+        opacity: 1; /* En celular siempre ver el botón */
+        transform: translateY(0);
+        margin-top: 1rem;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* --- PANTALLA DE BIENVENIDA (INTRO) --- */
+.intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.95); /* Casi opaco */
+    backdrop-filter: blur(10px);
+    z-index: 2000; /* Encima de todo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+.intro-content {
+    max-width: 600px;
+    padding: 2rem;
+    animation: slideUp 0.8s ease-out;
+}
+
+.intro-img-box img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid var(--color-game);
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+    margin-bottom: 1.5rem;
+}
+
+.intro-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #fff, var(--color-stack));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.intro-desc {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.neon-btn {
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    background: transparent;
+    border: 2px solid var(--color-game);
+    color: var(--color-game);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.neon-btn:hover {
+    background: var(--color-game);
+    color: #000;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Efecto borroso inicial para el landing */
+.split-container.blurred {
+    filter: blur(5px);
+    transform: scale(1.05);
+}
+
+/* --- CONTACTO --- */
+/* --- CONTACTO Y NAVEGACIÓN --- */
+.floating-contact, .floating-back {
+    position: fixed;
+    top: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1500;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s;
+    display: flex; /* Centrar icono */
+    justify-content: center;
+    align-items: center;
+}
+
+.floating-contact { right: 30px; }
+.floating-back { left: 30px; }
+
+.floating-contact:hover, .floating-back:hover {
+    background: var(--color-text-main);
+    color: #000;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s;
+}
+
+.contact-box {
+    background: #151515;
+    padding: 3rem;
+    border-radius: 15px;
+    border: 1px solid #333;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal:hover { color: white; }
+
+.contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: transform 0.2s, background 0.2s;
+    color: white;
+}
+
+.contact-link.email { background: #333; }
+.contact-link.email:hover { background: #444; }
+
+.contact-link.linkedin { background: #0077b5; }
+.contact-link.linkedin:hover { background: #005582; }
+
+.contact-link.itch { background: #fa5c5c; }
+.contact-link.itch:hover { background: #d44040; }
+
+.contact-link:hover {
+    transform: translateY(-3px);
+}
+
+/* CORRECCIÓN: Asegura que la clase hidden oculte el modal a pesar del display: flex */
+.modal-overlay.hidden {
+    display: none;
+}

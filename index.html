@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio | Hub Digital</title>
+    <!-- Fuentes Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Archivo CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Contenedor de Partículas (Fondo) -->
+    <div id="tsparticles"></div>
+
+    <!-- PANTALLA DE BIENVENIDA (Intro) -->
+    <section id="intro-screen" class="intro-overlay">
+        <div class="intro-content">
+            <div class="intro-img-box">
+                <!-- Foto de Perfil (Reemplaza con la tuya) -->
+                <img src="https://placehold.co/200x200/1a1a1a/00ff9d?text=Yo" alt="Foto de Perfil">
+            </div>
+            <h1 class="intro-title">Bienvenido a mi Portafolio</h1>
+            <p class="intro-desc">
+                Soy un apasionado <strong>Desarrollador Full Stack</strong> y <strong>Creador de Videojuegos</strong>.<br>
+                Aquí encontrarás mis proyectos más recientes y experimentos creativos.
+            </p>
+            <button id="enter-btn" class="neon-btn">INGRESAR AL HUB</button>
+        </div>
+    </section>
+
+    <!-- BOTÓN VOLVER A INTRO (Flecha Arriba) -->
+    <button id="back-intro-btn" class="floating-back" title="Volver al Inicio">
+        <i class="fa-solid fa-arrow-left"></i>
+    </button>
+
+    <!-- BOTÓN FLOTANTE DE CONTACTO -->
+    <button id="contact-btn" class="floating-contact">
+        <i class="fa-solid fa-envelope"></i>
+    </button>
+
+    <!-- MODAL DE CONTACTO -->
+    <div id="contact-modal" class="modal-overlay hidden">
+        <div class="modal-content contact-box">
+            <button id="close-contact" class="close-modal">&times;</button>
+            <h2>Conectemos</h2>
+            <p>¿Tienes un proyecto en mente o quieres colaborar?</p>
+            
+            <div class="contact-links">
+                <a href="mailto:tuemail@ejemplo.com" class="contact-link email">
+                    <i class="fa-solid fa-at"></i> Enviar Correo
+                </a>
+                <a href="https://linkedin.com/in/tuusuario" target="_blank" class="contact-link linkedin">
+                    <i class="fa-brands fa-linkedin"></i> LinkedIn
+                </a>
+                <a href="https://itch.io/profile/tuusuario" target="_blank" class="contact-link itch">
+                    <i class="fa-brands fa-itch-io"></i> Itch.io
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL (Split Landing) -->
+    <!-- Este es el contenedor principal que divide la pantalla en 3 partes -->
+    <main id="split-landing" class="split-container blurred">
+        
+        <!-- COLUMNA 1: Game Dev -->
+        <div class="split-item game" data-section="gamedev">
+            <div class="content">
+                <i class="fa-solid fa-gamepad icon-large"></i>
+                <h2>Game Developer</h2>
+                <p>Unity & Unreal Engine</p>
+                <button class="explore-btn">Explorar</button>
+            </div>
+            <!-- Capa oscura para el fondo -->
+            <div class="overlay"></div>
+        </div>
+
+        <!-- COLUMNA 2: Full Stack -->
+        <div class="split-item stack" data-section="fullstack">
+            <div class="content">
+                <i class="fa-solid fa-code icon-large"></i>
+                <h2>Full Stack Dev</h2>
+                <p>React & Node.js</p>
+                <button class="explore-btn">Explorar</button>
+            </div>
+            <div class="overlay"></div>
+        </div>
+
+        <!-- COLUMNA 3: Database Specialist -->
+        <div class="split-item data" data-section="database">
+            <div class="content">
+                <i class="fa-solid fa-database icon-large"></i>
+                <h2>Database Specialist</h2>
+                <p>SQL & NoSQL</p>
+                <button class="explore-btn">Explorar</button>
+            </div>
+            <div class="overlay"></div>
+        </div>
+
+    </main>
+
+    <!-- SECCIONES INTERNAS (Superpuestas / Modales) -->
+    <!-- Este bloque se muestra cuando entras a una sección -->
+    <div id="content-overlay" class="hidden">
+        <button id="back-btn" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Volver al Inicio</button>
+        
+        <!-- Aquí se llenan los proyectos con JavaScript -->
+        <div id="dynamic-area"></div>
+    </div>
+
+    <!-- Librería tsparticles (Bundle completo para soportar formas de texto) -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+    <!-- Script Principal -->
+    <script src="script.js"></script>
+</body>
+</html>

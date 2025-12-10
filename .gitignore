@@ -1,0 +1,18 @@
+# System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Editor Directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies (if you add npm later)
+node_modules/
+package-lock.json
+yarn.lock
