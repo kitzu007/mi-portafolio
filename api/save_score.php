@@ -3,7 +3,13 @@
 header('Content-Type: application/json');
 
 // Permitir solicitudes desde el mismo origen (y otros si fuera necesario)
-header("Access-Control-Allow-Origin: *");
+// Permitir solicitudes desde el mismo origen y desde GitHub Pages
+header("Access-Control-Allow-Origin: *"); // En producción real esto debería ser específico, pero para Ngrok/* es útil.
+// O si quieres ser estricto: 
+// $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+// if ($origin === 'https://kitzu007.github.io' || $origin === 'http://localhost') {
+//    header("Access-Control-Allow-Origin: $origin");
+// }
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 

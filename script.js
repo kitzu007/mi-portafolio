@@ -631,8 +631,25 @@ function setupSnakeGame() {
         }, 100);
     }
     
+    // --- CONFIGURACIÓN DE CONEXIÓN ---
+    // CUANDO USES NGROK: Cambia esta URL por la que te dé Ngrok (ej. "https://xxxx.ngrok-free.app/mi-portafolio/api/save_score.php")
+    // PARA LOCALHOST (WAMP): Usa "http://localhost/mi-portafolio/api/save_score.php"
+    const API_URL = "https://unfriable-pressor-alba.ngrok-free.dev/mi-portafolio/api/save_score.php"; 
+
+
     // Función para enviar datos a la API PHP
     async function sendDataToBackend(name, score, duration, moves, speed, death) {
+        
+        // --- VERIFICACIÓN DE ENTORNO ---
+        const isWamp = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isLiveServer = window.location.port === '5500'; // Puerto común de Live Server
+        const isFile = window.location.protocol === 'file:';
+
+        if (isFile || isLiveServer) {
+            alert("⚠️ ALERTA:\nEstás usando 'Live Server' o abriendo el archivo directo.\n\nPara que se guarden los datos, debes abrir el proyecto desde WAMP:\n👉 http://localhost/mi-portafolio/");
+            return;
+        }
+
         const payload = {
             player_name: name,
             score: score,
@@ -644,7 +661,7 @@ function setupSnakeGame() {
         };
         
         try {
-            const response = await fetch('api/save_score.php', {
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -658,8 +675,8 @@ function setupSnakeGame() {
                 alert("❌ Error al guardar: " + result.error);
             }
         } catch (err) {
-            console.error("Error Fetch:", err);
-            // alert("No se pudo conectar con la API (¿Está corriendo WAMP?).");
+            console.error("Error Fetch Detailed:", err);
+            alert("⚠️ Error de conexión: " + err.message + "\nAsegúrate de estar en http://localhost/mi-portafolio/");
         }
     }
 
