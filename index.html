@@ -4,30 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portafolio | Hub Digital</title>
-    <!-- Fuentes Google -->
+    
+    <!-- FUENTES DE GOOGLE: 'Outfit' para textos modernos y 'Press Start 2P' para lo retro -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
-    <!-- Fuente Retro para Game Dev -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <!-- FontAwesome para iconos -->
+    
+    <!-- ICONOS: Usamos FontAwesome para los logos de redes y UI -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Archivo CSS -->
+    
+    <!-- MI HOJA DE ESTILOS PERSONALIZADA -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- Contenedor de Partículas (Fondo) -->
-    <!-- Contenedor de Partículas (Fondo) -->
+    <!-- 1. FONDO DE PARTÍCULAS INTERACTIVO -->
+    <!-- Aquí es donde la librería tsparticles dibuja el ecosistema digital -->
     <div id="tsparticles"></div>
 
-    <!-- FONDO RETRO GRID (Oculto por defecto) -->
+    <!-- 2. FONDO RETRO (GRID) -->
+    <!-- Este fondo solo aparece cuando entras a la sección de Game Dev. Está oculto por defecto. -->
     <div id="retro-bg" class="hidden">
         <div class="retro-grid"></div>
-        <!-- retro-sun eliminado -->
     </div>
 
-    <!-- FILTROS SVG (Invisibles) -->
+    <!-- 3. FILTROS SVG (Técnicos) -->
+    <!-- Estos filtros crean el efecto borroso y de distorsión, pero no se ven directamente -->
     <svg style="display: none;">
         <defs>
             <filter id="pixelate" x="0" y="0">
@@ -37,22 +40,15 @@
                 <feComposite in="SourceGraphic" in2="a" operator="in"/>
                 <feMorphology operator="dilate" radius="2"/>
             </filter>
-            <!-- Filtro Pixelado V2 (Mas robusto) -->
-            <filter id="pixelate-robust">
-                <feFlood x="2" y="2" height="1" width="1"/>
-                <feComposite width="4" height="4"/>
-                <feTile result="a"/>
-                <feComposite in="SourceGraphic" in2="a" operator="in"/>
-                <feMorphology operator="dilate" radius="2"/>
-            </filter>
         </defs>
     </svg>
 
-    <!-- PANTALLA DE BIENVENIDA (Intro) -->
+    <!-- 4. PANTALLA DE BIENVENIDA (INTRO) -->
+    <!-- Lo primero que ve el usuario. Tiene efecto cristal y partículas aceleradas. -->
     <section id="intro-screen" class="intro-overlay">
         <div class="intro-content">
             <div class="intro-img-box">
-                <!-- Foto de Perfil (Reemplaza con la tuya) -->
+                <!-- Tu Foto de Perfil con animación de flotar -->
                 <img src="https://placehold.co/200x200/1a1a1a/00ff9d?text=Yo" alt="Foto de Perfil">
             </div>
             <h1 class="intro-title">Bienvenido a mi Portafolio</h1>
@@ -61,7 +57,7 @@
                 Aquí encontrarás mis proyectos más recientes y experimentos creativos.
             </p>
 
-            <!-- NUEVO: Fila de Habilidades Interactivas -->
+            <!-- BARRA DE HABILIDADES INTERACTIVA (Píldoras) -->
             <div class="intro-skills">
                 <div class="skill-pill game-pill">
                     <i class="fa-solid fa-gamepad"></i>
@@ -76,21 +72,25 @@
                     <span>Data</span>
                 </div>
             </div>
+            
+            <!-- EL BOTÓN MÁGICO: Al hacer clic activa el "Warp Speed" -->
             <button id="enter-btn" class="neon-btn">INGRESAR AL HUB</button>
         </div>
     </section>
 
-    <!-- BOTÓN VOLVER A INTRO (Flecha Arriba) -->
+    <!-- 5. HERRAMIENTAS DE NAVEGACIÓN FLOTANTES -->
+    
+    <!-- Botón para volver a ver la intro (Flecha izquierda) -->
     <button id="back-intro-btn" class="floating-back" title="Volver al Inicio">
         <i class="fa-solid fa-arrow-left"></i>
     </button>
 
-    <!-- BOTÓN FLOTANTE DE CONTACTO -->
+    <!-- Botón de contacto (Sobre de carta) -->
     <button id="contact-btn" class="floating-contact">
         <i class="fa-solid fa-envelope"></i>
     </button>
 
-    <!-- MODAL DE CONTACTO -->
+    <!-- 6. MODAL DE CONTACTO (Ventana emergente) -->
     <div id="contact-modal" class="modal-overlay hidden">
         <div class="modal-content contact-box">
             <button id="close-contact" class="close-modal">&times;</button>
@@ -111,11 +111,11 @@
         </div>
     </div>
 
-    <!-- PANTALLA PRINCIPAL (Split Landing) -->
-    <!-- Este es el contenedor principal que divide la pantalla en 3 partes -->
+    <!-- 7. EL HUB PRINCIPAL (DIVISIÓN EN 3 COLUMNAS) -->
+    <!-- split-landing es el contenedor flex que pone las 3 columnas una al lado de la otra -->
     <main id="split-landing" class="split-container blurred">
         
-        <!-- COLUMNA 1: Game Dev -->
+        <!-- COLUMNA 1: Game Dev (Verde) -->
         <div class="split-item game" data-section="gamedev">
             <div class="content">
                 <i class="fa-solid fa-gamepad icon-large"></i>
@@ -123,11 +123,11 @@
                 <p>Unity & Unreal Engine</p>
                 <button class="explore-btn">Explorar</button>
             </div>
-            <!-- Capa oscura para el fondo -->
+            <!-- Capa oscura para que el texto resalte -->
             <div class="overlay"></div>
         </div>
 
-        <!-- COLUMNA 2: Full Stack -->
+        <!-- COLUMNA 2: Full Stack (Azul) -->
         <div class="split-item stack" data-section="fullstack">
             <div class="content">
                 <i class="fa-solid fa-code icon-large"></i>
@@ -138,7 +138,7 @@
             <div class="overlay"></div>
         </div>
 
-        <!-- COLUMNA 3: Database Specialist -->
+        <!-- COLUMNA 3: Database (Naranja) -->
         <div class="split-item data" data-section="database">
             <div class="content">
                 <i class="fa-solid fa-database icon-large"></i>
@@ -151,18 +151,19 @@
 
     </main>
 
-    <!-- SECCIONES INTERNAS (Superpuestas / Modales) -->
-    <!-- Este bloque se muestra cuando entras a una sección -->
+    <!-- 8. VISTA DE DETALLES (CAPA SUPERIOR) -->
+    <!-- Aquí es donde se carga dinámicamente el contenido cuando haces clic en una columna -->
     <div id="content-overlay" class="hidden">
         <button id="back-btn" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Volver al Inicio</button>
         
-        <!-- Aquí se llenan los proyectos con JavaScript -->
+        <!-- Aquí JavaScript inyectará los proyectos y juegos -->
         <div id="dynamic-area"></div>
     </div>
 
-    <!-- Librería tsparticles (Bundle completo para soportar formas de texto) -->
+    <!-- SCRIPTS -->
+    <!-- Librería de partículas -->
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
-    <!-- Script Principal -->
+    <!-- Nuestro cerebro (Lógica del sitio) -->
     <script src="script.js"></script>
 </body>
 </html>

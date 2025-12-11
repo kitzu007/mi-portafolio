@@ -1,108 +1,116 @@
 :root {
-    --bg-dark: #0a0a0a; /* Fondo muy oscuro */
-    --color-text-main: #ffffff; /* Texto blanco principal */
-    --color-text-muted: #cccccc; /* Texto gris claro */
+    --bg-dark: #0a0a0a; /* Fondo muy oscuro base */
+    --color-text-main: #ffffff; 
+    --color-text-muted: #cccccc; 
     
-    /* COLORES NEÓN */
-    --color-game: #00ff9d;   /* Verde para videojuegos */
-    --color-stack: #00f3ff;  /* Azul cian para web */
-    --color-data: #ff5500;   /* Rojo/Naranja para datos */
+    /* PALETA DE COLORES NEÓN (Cyberpunk Style) */
+    --color-game: #00ff9d;   /* Verde Matrix para videojuegos */
+    --color-stack: #00f3ff;  /* Azul TRON para web full stack */
+    --color-data: #ff5500;   /* Naranja Fuego para bases de datos */
     
-    --font-main: 'Outfit', sans-serif; /* Tu fuente moderna */
-    --transition-speed: 0.5s; /* Velocidad de animaciones */
+    --font-main: 'Outfit', sans-serif; /* Tu fuente moderna principal */
+    --transition-speed: 0.5s; /* Qué tan rápido ocurren las animaciones */
 }
 
-/* Configuraciones básicas (Reset) */
+/* =========================================
+   1. CONFIGURACIÓN MUNDIAL (Reset)
+   ========================================= */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Evita que el padding rompa el tamaño */
 }
 
 body {
     background-color: var(--bg-dark);
     color: var(--color-text-main);
     font-family: var(--font-main);
-    overflow: hidden; /* Evita scroll en la pantalla principal */
+    overflow: hidden; /* IMPORTANTE: Evita scroll en la pantalla principal */
     height: 100vh;
 }
 
-/* --- FONDO DE PARTÍCULAS --- */
+/* =========================================
+   2. FONDOS ESPECIALES
+   ========================================= */
+
+/* A. Partículas (El ecosistema digital) */
 #tsparticles {
-    position: fixed;
+    position: fixed; /* Se queda quieto aunque muevas cosas */
     width: 100%;
     height: 100%;
-    z-index: 1; /* Detrás del texto pero delante del fondo negro */
-    pointer-events: none; /* Deja pasar los clics */
+    z-index: 1; /* Nivel 1: Detrás del texto pero delante del fondo negro */
+    pointer-events: none; /* Deja pasar los clics a lo que haya debajo */
 }
 
-/* --- FONDO RETRO (Game Dev) --- */
+/* B. Fondo Retro (Solo para Game Dev) */
 #retro-bg {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 0; /* Detrás de todo */
-    background: #050505; /* CORRECCIÓN: Fondo casi negro, menos cansado */
-    overflow: hidden;
+    top: 0; left: 0;
+    width: 100%; height: 100vh;
+    z-index: 0; /* Nivel 0: El fondo más profundo */
+    background: #050505; 
     overflow: hidden;
     pointer-events: none;
 }
 
-/* .retro-sun ELIMINADO POR SOLICITUD DE USUARIO */
-
+/* La rejilla en movimiento 3D (Synthwave style) */
 .retro-grid {
     position: absolute;
-    bottom: -50%;
-    left: -50%;
-    width: 200%;
-    height: 100%;
+    bottom: -50%; left: -50%;
+    width: 200%; height: 100%;
+    /* Gradiente que dibuja las líneas */
     background-image: 
-        linear-gradient(rgba(0, 255, 157, 0.15) 1px, transparent 1px), /* Verde muy sutil */
+        linear-gradient(rgba(0, 255, 157, 0.15) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 255, 157, 0.15) 1px, transparent 1px);
-    background-size: 60px 60px; /* Cuadros más grandes para menos ruido */
+    background-size: 60px 60px; 
+    /* Truco 3D para inclinar el suelo */
     transform-style: preserve-3d;
     transform: perspective(300px) rotateX(60deg);
-    animation: moveGrid 8s linear infinite; /* Más lento para no marear */
+    animation: moveGrid 8s linear infinite; /* Animación infinita */
     z-index: 2;
-    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%); /* Desvanecido más fuerte */
+    /* Máscara para que se desvanezca en el horizonte */
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%); 
 }
 
+/* Animación del suelo moviéndose */
 @keyframes moveGrid {
     0% { transform: perspective(300px) rotateX(60deg) translateY(0); }
     100% { transform: perspective(300px) rotateX(60deg) translateY(50px); }
 }
 
-/* --- EFECTO PIXEL ART (Para las tarjetas) --- */
+/* =========================================
+   3. ESTILOS DE TARJETAS (Pixel Art)
+   ========================================= */
 .pixel-card:hover .project-img-box img {
-    /* Simulamos pixelado con escalado "nearest neighbor" */
+    /* Esta magia hace que la imagen se vea pixelada al hacer zoom */
     image-rendering: pixelated; 
     transform: scale(1.1); 
-    filter: contrast(1.2) brightness(1.1); /* Efecto extra de brillo */
+    filter: contrast(1.2) brightness(1.1); 
 }
 
-/* Cambiar fuente en Hover solo para Game Dev */
+/* Cambiar fuente a tipo Arcade cuando pasas el mouse */
 .pixel-card:hover h3 {
     font-family: 'Press Start 2P', cursive;
-    font-size: 0.8rem; /* Ajuste porque esta fuente es grande */
+    font-size: 0.8rem; 
     color: var(--color-game) !important;
-    text-shadow: 2px 2px 0px #000;
+    text-shadow: 2px 2px 0px #000; /* Sombra dura estilo retro */
     line-height: 1.5;
 }
 
-/* --- DISEÑO DE PANTALLA DIVIDIDA (SPLIT LANDING) --- */
+/* =========================================
+   4. LAYOUT PRINCIPAL (Split Landing)
+   ========================================= */
 .split-container {
-    display: flex; /* Pone las columnas una al lado de otra */
+    display: flex; /* Pone las 3 columnas en fila */
     width: 100%;
-    height: 100vh; /* Altura completa de la ventana */
+    height: 100vh; 
     position: relative;
-    z-index: 2; /* Encima de las partículas */
+    z-index: 2; /* Nivel 2: Encima de las partículas */
 }
 
 /* Estilo común para cada columna */
 .split-item {
-    flex: 1; /* Todas empiezan con el mismo ancho */
+    flex: 1; /* Todas empiezan con el mismo ancho (1 parte cada una) */
     position: relative;
     display: flex;
     align-items: center;
@@ -110,39 +118,33 @@ body {
     text-align: center;
     transition: flex var(--transition-speed) ease; /* Animación suave al estirar */
     cursor: pointer;
-    border-right: 1px solid rgba(255,255,255,0.05); /* Línea divisoria sutil */
+    border-right: 1px solid rgba(255,255,255,0.05); /* Línea divisoria muy sutil */
     overflow: hidden;
 }
 
-/* Quitar borde a la última columna */
+/* Quitar borde a la última columna (derecha) */
 .split-item:last-child {
     border-right: none;
 }
 
-/* COLOR DE FONDO (Gradientes sutiles para cada sección) */
-.game {
-    background: linear-gradient(to bottom, transparent, rgba(0, 255, 157, 0.05));
-}
-.stack {
-    background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.05));
-}
-.data {
-    background: linear-gradient(to bottom, transparent, rgba(255, 85, 0, 0.05));
-}
+/* FONDOS SUTILES PARA CADA SECCIÓN */
+.game { background: linear-gradient(to bottom, transparent, rgba(0, 255, 157, 0.05)); }
+.stack { background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.05)); }
+.data { background: linear-gradient(to bottom, transparent, rgba(255, 85, 0, 0.05)); }
 
 /* EFECTO HOVER: La columna seleccionada crece */
 .split-item:hover {
-    flex: 2.5; /* Se hace más ancha */
+    flex: 2.5; /* Se hace 2.5 veces más ancha que las otras */
 }
 
-/* CONTENIDO DENTRO DE LA COLUMNA */
+/* Contenedor interno del texto/icono */
 .content {
     position: relative;
     z-index: 3;
     transition: transform var(--transition-speed);
 }
 
-/* El icono grande */
+/* El icono gigante */
 .icon-large {
     font-size: 4rem;
     margin-bottom: 1rem;
@@ -150,17 +152,16 @@ body {
     transition: color 0.3s;
 }
 
-/* Colores de Iconos por defecto */
+/* Colores de Iconos por defecto (apagados) */
 .game .icon-large { color: rgba(255,255,255, 0.5); }
 .stack .icon-large { color: rgba(255,255,255, 0.5); }
 .data .icon-large { color: rgba(255,255,255, 0.5); }
 
-/* Colores de Iconos al hacer HOVER en la columna */
+/* Colores de Iconos al hacer HOVER (encendidos) */
 .game:hover .icon-large { color: var(--color-game); text-shadow: 0 0 20px var(--color-game); }
 .stack:hover .icon-large { color: var(--color-stack); text-shadow: 0 0 20px var(--color-stack); }
 .data:hover .icon-large { color: var(--color-data); text-shadow: 0 0 20px var(--color-data); }
 
-/* Títulos */
 h2 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
@@ -173,7 +174,7 @@ p {
     color: var(--color-text-muted);
 }
 
-/* Botón Explorar (Aparece en Hover) */
+/* Botón Explorar que aparece mágicamente */
 .explore-btn {
     margin-top: 2rem;
     padding: 0.8rem 2rem;
@@ -183,8 +184,8 @@ p {
     font-size: 1rem;
     cursor: pointer;
     border-radius: 50px;
-    opacity: 0; /* Oculto por defecto */
-    transform: translateY(20px);
+    opacity: 0; /* Oculto: invisible */
+    transform: translateY(20px); /* Oculto: desplazado abajo */
     transition: all 0.5s ease;
 }
 
@@ -194,31 +195,28 @@ p {
     transform: translateY(0);
 }
 
-/* Colores de botones específicos al Hover */
+/* Colores específicos de cada botón */
 .game:hover .explore-btn { border-color: var(--color-game); color: var(--color-game); }
 .stack:hover .explore-btn { border-color: var(--color-stack); color: var(--color-stack); }
 .data:hover .explore-btn { border-color: var(--color-data); color: var(--color-data); }
 
 
-/* --- OVERLAY DE DETALLE (Pantalla Completa al entrar) --- */
-.hidden {
-    display: none; /* Ocultar cosas que no se usan */
-}
+/* =========================================
+   5. OVERLAY DE DETALLES (Pantalla de Proyectos)
+   ========================================= */
+.hidden { display: none; }
 
 #content-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent; /* CORRECCIÓN: Transparente para ver el fondo */
-    z-index: 100; /* Encima de todo */
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: transparent; /* Transparente para ver el fondo */
+    z-index: 100; /* Nivel 100: Encima del Hub */
     overflow-y: auto; /* Permite bajar si hay mucho texto */
     padding: 40px;
     animation: fadeIn 0.5s;
 }
 
-/* Botón Volver */
 .back-btn {
     background: transparent;
     border: none;
@@ -232,15 +230,17 @@ p {
 }
 .back-btn:hover { text-decoration: underline; }
 
-/* Grid de Proyectos */
+/* Grid Responsive de Proyectos */
 .projects-grid {
     display: grid;
-     /* Columnas automáticas responsive */
+    /* Esto es magia CSS: crea tantas columnas como quepan de mínimo 300px */
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 2rem;
 }
 
-/* --- LAYOUT ESPECIAL PARA GAME DEV (Split View) --- */
+/* =========================================
+   6. LAYOUT GAME DEV + SNAKE
+   ========================================= */
 .gamedev-container {
     display: flex;
     gap: 3rem;
@@ -249,7 +249,7 @@ p {
 }
 
 .projects-col {
-    flex: 1; /* Ocupa el espacio restante */
+    flex: 1; /* Ocupa el espacio que sobre */
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 2rem;
@@ -262,32 +262,29 @@ p {
     padding: 1rem;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
-    position: sticky; /* Se queda fijo al hacer scroll */
+    position: sticky; /* Se queda pegado arriba al hacer scroll */
     top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-/* Estilos del Canvas Snake */
+/* Canvas del juego Snake */
 #snake-canvas {
     background: #111;
     border: 2px solid #333;
     display: block;
     margin-bottom: 1rem;
-    position: relative; /* Para el overlay CRT */
-    box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); /* Glow externo */
+    position: relative; 
+    box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); 
 }
 
-/* Efecto Scanlines CRT */
+/* Efecto de líneas de TV vieja (Scanlines) */
 #snake-canvas::after {
     content: " ";
     display: block;
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    top: 0; left: 0; bottom: 0; right: 0;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
     z-index: 2;
     background-size: 100% 2px, 3px 100%;
@@ -318,23 +315,24 @@ p {
     font-size: 0.8rem;
     cursor: pointer;
     margin-top: 1rem;
-    display: none; /* Oculto mientras se juega */
+    display: none; /* Oculto mientras juegas */
 }
 
-/* RESPONSIVE PARA EL JUEGO */
+/* En tablets/móviles grandes, movemos el juego abajo */
 @media (max-width: 1100px) {
     .gamedev-container {
-        flex-direction: column-reverse; /* Juego arriba en tablets? O abajo? Mejor abajo o oculto en movil muy chico */
+        flex-direction: column-reverse; 
         align-items: center;
     }
     .game-col {
         width: 100%;
         max-width: 400px;
-        position: static; /* Ya no es sticky en movil */
+        position: static; 
         margin-top: 2rem;
     }
 }
 
+/* Estilos generales de tarjeta de proyecto */
 .project-card {
     background: #111;
     border: 1px solid #333;
@@ -343,7 +341,7 @@ p {
     transition: transform 0.3s;
 }
 .project-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px); /* Flota al pasar el mouse */
     border-color: white;
 }
 
@@ -353,9 +351,7 @@ p {
     object-fit: cover;
 }
 
-.project-info {
-    padding: 1.5rem;
-}
+.project-info { padding: 1.5rem; }
 
 .tag {
     background: #222;
@@ -378,17 +374,19 @@ p {
     font-weight: bold;
 }
 
-/* RESPONSIVE (Móvil) */
+/* =========================================
+   7. RESPONSIVE (CELULAR)
+   ========================================= */
 @media (max-width: 768px) {
     .split-container {
-        flex-direction: column; /* En celular, una columna debajo de otra */
+        flex-direction: column; /* Apilar columnas en vez de ponerlas al lado */
     }
     .split-item {
         border-right: none;
         border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     .explore-btn {
-        opacity: 1; /* En celular siempre ver el botón */
+        opacity: 1; /* En celular siempre mostramos el botón */
         transform: translateY(0);
         margin-top: 1rem;
     }
@@ -399,16 +397,16 @@ p {
     to { opacity: 1; }
 }
 
-/* --- PANTALLA DE BIENVENIDA (INTRO) --- */
+/* =========================================
+   8. PANTALLA DE BIENVENIDA (INTRO)
+   ========================================= */
 .intro-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background: rgba(5, 5, 10, 0.6); /* Transparente para ver el "Ecosistema" de fondo */
     backdrop-filter: blur(10px);
-    z-index: 2000; /* Encima de todo */
+    z-index: 2000; /* Nivel Dios: Encima de absolutamente todo */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -416,23 +414,23 @@ p {
     transition: opacity 0.8s ease, visibility 0.8s;
 }
 
-/* NUEVO: Tarjeta de Cristal (Glassmorphism) */
+/* Tarjeta de Cristal (Glassmorphism) */
 .intro-content {
     max-width: 650px;
     padding: 3rem;
     
-    /* Efecto Cristal Mejorado */
-    background: rgba(30, 30, 35, 0.4); /* Más claro para contraste */
+    /* Magia del cristal esmerilado */
+    background: rgba(30, 30, 35, 0.4); 
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15); /* Borde más visible */
+    border: 1px solid rgba(255, 255, 255, 0.15); 
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     border-radius: 20px;
     
     animation: slideUp 0.8s ease-out;
 }
 
-/* Animación de Flotar para la foto */
+/* Animación de Flotar para la foto (Respiración) */
 @keyframes float {
     0% { transform: translateY(0px); }
     50% { transform: translateY(-15px); }
@@ -440,16 +438,38 @@ p {
 }
 
 .intro-img-box img {
-    /* ... propiedades anteriores se mantienen si no se sobrescriben, pero ajustamos la animación */
+    /* ... propiedades de la imagen ... */
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid var(--color-game);
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+    margin-bottom: 1.5rem;
     animation: float 6s ease-in-out infinite; 
 }
 
-/* Estilos de las Píldoras de Habilidad */
+.intro-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #fff, var(--color-stack));
+    -webkit-background-clip: text;
+    background-clip: text; /* Texto gradiente */
+    -webkit-text-fill-color: transparent;
+}
+
+.intro-desc {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+/* Estilos de los botones de habilidad (Píldoras) */
 .intro-skills {
     display: flex;
     justify-content: center;
-    gap: 2rem; /* Más espacio entre botones */
-    margin-top: 3rem; /* SEPARACIÓN EXTRA DEL TEXTO */
+    gap: 2rem; 
+    margin-top: 3rem; 
     margin-bottom: 3rem;
     flex-wrap: wrap; 
 }
@@ -458,35 +478,31 @@ p {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 1rem 2rem; /* Más grandes */
-    background: rgba(255, 255, 255, 0.1); /* Fondo más visible */
+    padding: 1rem 2rem; 
+    background: rgba(255, 255, 255, 0.1); 
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50px;
-    color: #fff; /* Texto blanco puro */
-    font-size: 1rem; /* Texto más grande */
+    color: #fff; 
+    font-size: 1rem; 
     font-weight: 600;
     cursor: default;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra suave */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
 }
 
-.skill-pill i { font-size: 1.2rem; }
-
-/* HOVER EFFECTS: Cada uno brilla con su color */
+/* HOVER INTERACTIVO: Cada botón se enciende con su color */
 .game-pill:hover {
     border-color: var(--color-game);
     color: var(--color-game);
     box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
     transform: translateY(-3px);
 }
-
 .stack-pill:hover {
     border-color: var(--color-stack);
     color: var(--color-stack);
     box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
     transform: translateY(-3px);
 }
-
 .data-pill:hover {
     border-color: var(--color-data);
     color: var(--color-data);
@@ -520,19 +536,51 @@ p {
     to { transform: translateY(0); opacity: 1; }
 }
 
-/* Efecto borroso inicial para el landing */
-.split-container.blurred {
-    filter: blur(5px);
-    transform: scale(1.05);
+/* =========================================
+   9. TRANSICIONES Y EFECTOS FINALES
+   ========================================= */
+
+/* A. EPIC WARP (Zoom acelerado) */
+.intro-exit {
+    transform: scale(2); /* Zoom brutal hacia la cámara */
+    opacity: 0;
+    filter: blur(10px);
+    transition: all 0.8s ease-in; /* Curva de aceleración */
 }
 
-/* --- CONTACTO --- */
-/* --- CONTACTO Y NAVEGACIÓN --- */
+/* B. Destello Gris (Flash cinemático) */
+.white-flash {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #888888; 
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s;
+    mix-blend-mode: hard-light; /* Se mezcla con el fondo para no quemar la vista */
+}
+.flash-active { opacity: 1; }
+
+/* C. Efecto Borroso (Blur) del Landing */
+.split-container.blurred {
+    filter: blur(5px);
+    transform: scale(1.05); /* Un poco zoomed in mientras está borroso */
+    transition: all 1s ease-out; 
+}
+
+.split-container.active {
+    filter: blur(0);
+    transform: scale(1); /* Vuelve a normalidad */
+}
+
+/* =========================================
+   10. ELEMENTOS FLOTANTES (UI)
+   ========================================= */
 .floating-contact, .floating-back {
     position: fixed;
     top: 30px;
-    width: 60px;
-    height: 60px;
+    width: 60px; height: 60px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -541,10 +589,10 @@ p {
     cursor: pointer;
     z-index: 1500;
     backdrop-filter: blur(5px);
-    transition: all 0.3s;
-    display: flex; /* Centrar icono */
+    display: flex; 
     justify-content: center;
     align-items: center;
+    transition: all 0.3s;
 }
 
 .floating-contact { right: 30px; }
@@ -557,12 +605,11 @@ p {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
+/* MODAL OSCURO */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background: rgba(0,0,0,0.8);
     backdrop-filter: blur(5px);
     z-index: 3000;
@@ -572,6 +619,7 @@ p {
     animation: fadeIn 0.3s;
 }
 
+/* Caja de contacto */
 .contact-box {
     background: #151515;
     padding: 3rem;
@@ -586,16 +634,12 @@ p {
 
 .close-modal {
     position: absolute;
-    top: 15px;
-    right: 20px;
-    background: none;
-    border: none;
+    top: 15px; right: 20px;
+    background: none; border: none;
     color: #666;
     font-size: 2rem;
     cursor: pointer;
-    transition: color 0.3s;
 }
-
 .close-modal:hover { color: white; }
 
 .contact-links {
@@ -614,24 +658,13 @@ p {
     border-radius: 8px;
     text-decoration: none;
     font-weight: bold;
-    transition: transform 0.2s, background 0.2s;
     color: white;
+    transition: transform 0.2s, background 0.2s;
 }
 
 .contact-link.email { background: #333; }
-.contact-link.email:hover { background: #444; }
-
 .contact-link.linkedin { background: #0077b5; }
-.contact-link.linkedin:hover { background: #005582; }
-
 .contact-link.itch { background: #fa5c5c; }
-.contact-link.itch:hover { background: #d44040; }
+.contact-link:hover { transform: translateY(-3px); }
 
-.contact-link:hover {
-    transform: translateY(-3px);
-}
-
-/* CORRECCIÓN: Asegura que la clase hidden oculte el modal a pesar del display: flex */
-.modal-overlay.hidden {
-    display: none;
-}
+.modal-overlay.hidden { display: none; }
