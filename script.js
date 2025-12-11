@@ -202,9 +202,13 @@ backIntroBtn.addEventListener('click', () => {
         tsParticles.load("tsparticles", landingParticles);
         retroBg.classList.add('hidden'); // NUEVO: Asegurar que se oculta el fondo retro
         
+        retroBg.classList.add('hidden'); // NUEVO: Asegurar que se oculta el fondo retro
+        
         // Detener Snake
-        if(gameInterval) clearInterval(gameInterval);
-        gameRunning = false;
+        if(gameRunning) {
+            gameRunning = false;
+            cancelAnimationFrame(gameAnimationFrame);
+        }
     }
 });
 
@@ -234,9 +238,11 @@ backBtn.addEventListener('click', () => {
     // Restaurar partículas iniciales
     tsParticles.load("tsparticles", landingParticles);
 
-    // Detener juego Snake si está corriendo
-    if(gameInterval) clearInterval(gameInterval);
-    gameRunning = false;
+    // Detener juego Snake
+    if(gameRunning) {
+        gameRunning = false;
+        cancelAnimationFrame(gameAnimationFrame); // NUEVO: Cancelar frame
+    }
 
     // NUEVO: Ocultar el fondo retro al salir
     retroBg.classList.add('hidden');
@@ -355,8 +361,11 @@ function openDetails(category) {
 // ==========================================
 // JUEGO SNAKE
 // ==========================================
-let gameInterval;
+// let gameInterval; // YA NO SE USA
 let gameRunning = false;
+
+let gameAnimationFrame;
+let lastTime = 0;
 
 function setupSnakeGame() {
     const canvas = document.getElementById('snake-canvas');
@@ -366,95 +375,296 @@ function setupSnakeGame() {
     const msgEl = document.getElementById('game-over-msg');
 
     // Configuración
-    const box = 20; // Tamaño de cada cuadro
+    const box = 20; 
+    
+    // Estado Lógico
     let snake = [];
-    snake[0] = { x: 9 * box, y: 10 * box }; // Posición inicial
+    let prevSnake = []; 
+    
+    // Inicialización
+    snake[0] = { x: 9 * box, y: 10 * box };
+    prevSnake[0] = { x: 9 * box, y: 10 * box };
 
     let food = {
         x: Math.floor(Math.random() * 15) * box,
-        y: Math.floor(Math.random() * 15) * box
+        y: Math.floor(Math.random() * 15) * box,
+        color: "#ff00cc",
+        pulse: 0
     };
 
     let score = 0;
-    let d; // Dirección
+    let d; 
+    
+    // Cola de Inputs (Buffer)
+    let inputQueue = [];
 
-    // Controles
-    document.addEventListener('keydown', direction);
+    // Sistema de Partículas
+    let particles = [];
 
-    function direction(event) {
+    // Variables de Loop
+    let dropCounter = 0;
+    let dropInterval = 100;
+
+    // --- TELEMETRÍA (Data Analyst Mode) ---
+    let startTime = 0;
+    let movesCount = 0;
+    let maxSpeed = 100; // ms por frame (menor es más rápido)
+    let deathReason = ""; // 'wall' o 'self'
+
+    // Inputs
+    document.addEventListener('keydown', handleInput);
+
+    function handleInput(event) {
         if (!gameRunning) return;
         
-        let key = event.keyCode;
-        if(key == 37 && d != "RIGHT") d = "LEFT";
-        else if(key == 38 && d != "DOWN") d = "UP";
-        else if(key == 39 && d != "LEFT") d = "RIGHT";
-        else if(key == 40 && d != "UP") d = "DOWN";
+        const key = event.keyCode;
+        const validKeys = [37, 38, 39, 40];
         
-        // Prevenir scroll con flechas
-        if([37, 38, 39, 40].indexOf(key) > -1) {
+        if (validKeys.includes(key)) {
             event.preventDefault();
+            
+            // Mapear tecla
+            let newDir;
+            if (key === 37) newDir = "LEFT";
+            if (key === 38) newDir = "UP";
+            if (key === 39) newDir = "RIGHT";
+            if (key === 40) newDir = "DOWN";
+
+            const lastDir = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : d;
+            
+            // Validaciones
+            if (newDir === "LEFT" && lastDir === "RIGHT") return;
+            if (newDir === "RIGHT" && lastDir === "LEFT") return;
+            if (newDir === "UP" && lastDir === "DOWN") return;
+            if (newDir === "DOWN" && lastDir === "UP") return;
+            if (newDir === lastDir) return;
+
+            if (inputQueue.length < 3) {
+                inputQueue.push(newDir);
+                movesCount++; // Registrar movimiento
+            }
         }
     }
 
-    function draw() {
-        // Limpiar canvas
-        ctx.fillStyle = "#111";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Dibujar Serpiente
-        for(let i = 0; i < snake.length; i++) {
-            ctx.fillStyle = (i == 0) ? "#00ff9d" : "#00cc7d"; // Cabeza vs Cuerpo
-            ctx.fillRect(snake[i].x, snake[i].y, box, box);
-
-            ctx.strokeStyle = "#000";
-            ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+    function createExplosion(x, y, color) {
+        for(let i=0; i<20; i++) {
+            particles.push({
+                x: x + box/2,
+                y: y + box/2,
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10,
+                life: 1.0,
+                color: color,
+                size: Math.random() * 3 + 1
+            });
         }
+    }
 
-        // Dibujar Comida
-        ctx.fillStyle = "#ff00cc";
-        ctx.fillRect(food.x, food.y, box, box);
+    // Interpolación Lineal
+    function lerp(start, end, amt) {
+        return (1 - amt) * start + amt * end;
+    }
 
-        // Posición actual cabeza
-        let snakeX = snake[0].x;
-        let snakeY = snake[0].y;
+    function update(time = 0) {
+        if(!gameRunning) return;
 
-        // Mover
-        if(d == "LEFT") snakeX -= box;
-        if(d == "UP") snakeY -= box;
-        if(d == "RIGHT") snakeX += box;
-        if(d == "DOWN") snakeY += box;
+        const deltaTime = time - lastTime;
+        lastTime = time;
 
-        // Comer
-        if(snakeX == food.x && snakeY == food.y) {
-            score++;
-            scoreEl.innerText = score;
-            food = {
-                x: Math.floor(Math.random() * 15) * box,
-                y: Math.floor(Math.random() * 15) * box
+        dropCounter += deltaTime;
+
+        // --- LOGICA DE JUEGO ---
+        while (dropCounter > dropInterval) {
+            dropCounter -= dropInterval;
+
+            if (inputQueue.length > 0) {
+                d = inputQueue.shift();
             }
-        } else {
-            // Quitar cola
-            snake.pop();
+
+            if (d) {
+                prevSnake = snake.map(segment => ({ ...segment }));
+
+                let snakeX = snake[0].x;
+                let snakeY = snake[0].y;
+
+                if(d == "LEFT") snakeX -= box;
+                if(d == "UP") snakeY -= box;
+                if(d == "RIGHT") snakeX += box;
+                if(d == "DOWN") snakeY += box;
+
+                // Comer
+                let ate = false;
+                if(snakeX == food.x && snakeY == food.y) {
+                    score++;
+                    scoreEl.innerText = score;
+                    createExplosion(food.x, food.y, "#ff00cc");
+                    
+                    let newFoodX, newFoodY;
+                    let validPos = false;
+                    while(!validPos) {
+                        newFoodX = Math.floor(Math.random() * 15) * box;
+                        newFoodY = Math.floor(Math.random() * 15) * box;
+                        validPos = !collision({x:newFoodX, y:newFoodY}, snake);
+                    }
+                    food.x = newFoodX;
+                    food.y = newFoodY;
+
+                    ate = true;
+                    if(dropInterval > 60) dropInterval -= 1;
+                    
+                    // Actualizar maxSpeed si superamos el récord de esta sesión
+                    if (dropInterval < maxSpeed) maxSpeed = dropInterval;
+
+                } else {
+                    snake.pop();
+                }
+
+                // Game Over Check
+                let newHead = { x: snakeX, y: snakeY };
+                
+                // Chequear Muerte por Pared
+                if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height) {
+                    deathReason = "wall";
+                    gameOver();
+                    return;
+                }
+                
+                // Chequear Muerte por Pertenecer a sí mismo
+                if(collision(newHead, snake)) {
+                    deathReason = "self";
+                    gameOver();
+                    return; 
+                }
+
+                snake.unshift(newHead);
+                
+                if (ate) {
+                    let tail = prevSnake[prevSnake.length - 1];
+                    prevSnake.push({ ...tail });
+                }
+            }
         }
 
-        // Nueva cabeza
-        let newHead = { x: snakeX, y: snakeY };
+        // --- RENDERIZADO ---
+        ctx.fillStyle = "#050505";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        let alpha = dropCounter / dropInterval;
+        if (alpha > 1) alpha = 1;
+        if (!d) alpha = 1;
 
-        // Game Over (Chocar pared o cuerpo)
-        if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-            clearInterval(gameInterval);
-            gameRunning = false;
-            msgEl.style.display = 'block';
-            roleBtn.innerText = 'REINTENTAR';
-            roleBtn.style.display = 'block';
-            return;
+        ctx.strokeStyle = "#111";
+        ctx.lineWidth = 1;
+        for(let i=0; i<canvas.width; i+=box) {
+            ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width, i); ctx.stroke();
         }
 
-        snake.unshift(newHead);
+        food.pulse += 0.1;
+        const glowSize = 15 + Math.sin(food.pulse) * 5;
+        
+        ctx.shadowBlur = glowSize;
+        ctx.shadowColor = "#ff00cc";
+        ctx.fillStyle = "#ff00cc";
+        ctx.fillRect(food.x + 2, food.y + 2, box - 4, box - 4);
+        ctx.shadowBlur = 0;
+
+        for(let i = 0; i < snake.length; i++) {
+            const curr = snake[i];
+            const prev = prevSnake[i] || curr; 
+
+            const renderX = lerp(prev.x, curr.x, alpha);
+            const renderY = lerp(prev.y, curr.y, alpha);
+
+            if (i === 0) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#00ff9d";
+                ctx.fillStyle = "#fff";
+            } else {
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = "#00ff9d";
+            }
+
+            ctx.fillRect(renderX, renderY, box, box);
+
+            if (i === 0) {
+                ctx.fillStyle = "#000";
+                ctx.fillRect(renderX + 4, renderY + 4, 4, 4);
+                ctx.fillRect(renderX + 12, renderY + 4, 4, 4);
+            }
+        }
+        ctx.shadowBlur = 0;
+
+        particles.forEach((p, index) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.03;
+
+            if(p.life <= 0) {
+                particles.splice(index, 1);
+            } else {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.globalAlpha = 1.0;
+            }
+        });
+
+        gameAnimationFrame = requestAnimationFrame(update);
+    }
+
+    function gameOver() {
+        gameRunning = false;
+        cancelAnimationFrame(gameAnimationFrame);
+        msgEl.style.display = 'block';
+        roleBtn.innerText = 'REINTENTAR';
+        roleBtn.style.display = 'block';
+        
+        // --- PROCESO DE GUARDADO DE DATOS ---
+        const duration = Math.floor((Date.now() - startTime) / 1000); // Segundos jugados
+        // Pedir nombre al usuario
+        setTimeout(() => {
+            const name = prompt("¡Juego Terminado! Ingresa tu nombre para guardar tus estadísticas (Database Analyst Mode):", "Player 1");
+            if(name) {
+                sendDataToBackend(name, score, duration, movesCount, maxSpeed, deathReason);
+            }
+        }, 100);
+    }
+    
+    // Función para enviar datos a la API PHP
+    async function sendDataToBackend(name, score, duration, moves, speed, death) {
+        const payload = {
+            player_name: name,
+            score: score,
+            duration_seconds: duration,
+            moves_count: moves,
+            max_speed_ms: speed,
+            death_type: death,
+            platform: navigator.platform // Info básica del sistema
+        };
+        
+        try {
+            const response = await fetch('api/save_score.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            if(result.success) {
+                alert("✅ Datos guardados en MySQL exitosamente.");
+            } else {
+                console.error("Error DB:", result.error);
+                alert("❌ Error al guardar: " + result.error);
+            }
+        } catch (err) {
+            console.error("Error Fetch:", err);
+            // alert("No se pudo conectar con la API (¿Está corriendo WAMP?).");
+        }
     }
 
     function collision(head, array) {
-        for(let i = 0; i < array.length; i++) {
+         for(let i = 0; i < array.length; i++) {
             if(head.x == array[i].x && head.y == array[i].y) return true;
         }
         return false;
@@ -462,17 +672,32 @@ function setupSnakeGame() {
 
     // Botón Jugar/Reintentar
     roleBtn.addEventListener('click', () => {
-        // Reset
+        // Reset Logic
         snake = [];
         snake[0] = { x: 9 * box, y: 10 * box };
+        prevSnake = [];
+        prevSnake[0] = { x: 9 * box, y: 10 * box };
+        
         score = 0;
         scoreEl.innerText = score;
-        d = undefined; // Sin movimiento inicial
+        
+        d = undefined;
+        inputQueue = [];
+        
         msgEl.style.display = 'none';
         roleBtn.style.display = 'none';
         
+        dropInterval = 100;
+        particles = []; 
+        
+        // Reset Telemetría
+        movesCount = 0;
+        maxSpeed = 100;
+        startTime = Date.now();
+        deathReason = "";
+
         gameRunning = true;
-        if(gameInterval) clearInterval(gameInterval);
-        gameInterval = setInterval(draw, 100);
+        lastTime = performance.now();
+        update(); 
     });
 }
