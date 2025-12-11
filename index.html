@@ -90,6 +90,11 @@
         <i class="fa-solid fa-envelope"></i>
     </button>
 
+    <!-- Botón de Información Técnica (?) -->
+    <button id="info-btn" class="floating-info" title="Cómo se hizo este portafolio">
+        <i class="fa-solid fa-question"></i>
+    </button>
+
     <!-- 6. MODAL DE CONTACTO (Ventana emergente) -->
     <div id="contact-modal" class="modal-overlay hidden">
         <div class="modal-content contact-box">
@@ -108,6 +113,46 @@
                     <i class="fa-brands fa-itch-io"></i> Itch.io
                 </a>
             </div>
+        </div>
+    </div>
+
+    <!-- 6.5. MODAL DE INFO TÉCNICA -->
+    <div id="info-modal" class="modal-overlay hidden">
+        <div class="modal-content info-box">
+            <button id="close-info" class="close-modal">&times;</button>
+            <h2 style="color: var(--color-stack);">Detrás del Código</h2>
+            <p style="margin-bottom: 20px;">Este portafolio es una Single Page Application (SPA) construida con:</p>
+            
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <i class="fa-brands fa-html5" style="color: #e34c26;"></i>
+                    <span>HTML5 Semántico</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fa-brands fa-css3-alt" style="color: #264de4;"></i>
+                    <span>CSS3 + Flex/Grid</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fa-brands fa-js" style="color: #f7df1e;"></i>
+                    <span>Vanilla JS Moderno</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fa-solid fa-atom" style="color: #00d8ff;"></i>
+                    <span>tsParticles Lib</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fa-brands fa-php" style="color: #777bb4;"></i>
+                    <span>PHP (API Backend)</span>
+                </div>
+                <div class="tech-item">
+                    <i class="fa-solid fa-database" style="color: #f29111;"></i>
+                    <span>MySQL Database</span>
+                </div>
+            </div>
+            
+            <p style="font-size: 0.9rem; color: #888; margin-top: 20px;">
+                Desarrollado con pasión y ☕ por [Tu Nombre].
+            </p>
         </div>
     </div>
 

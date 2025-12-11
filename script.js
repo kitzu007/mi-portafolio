@@ -84,6 +84,15 @@ const projectsData = [
 ];
 
 // ==========================================
+// 1.1 SOBRE MI (Descripciones por área)
+// ==========================================
+const aboutMeData = {
+    gamedev: "Como desarrollador de videojuegos, combino creatividad y lógica para construir mundos interactivos. Tengo experiencia en Unity y Unreal Engine, trabajando en mecánicas de juego, optimización gráfica y sistemas de inteligencia artificial para brindar experiencias inmersivas.",
+    fullstack: "En el desarrollo web, me enfoco en crear soluciones completas y escalables. Domino tanto el frontend como el backend, utilizando tecnologías modernas como React, Node.js y bases de datos para entregar aplicaciones rápidas, seguras y centradas en el usuario.",
+    database: "Como especialista en datos, diseño arquitecturas robustas y eficientes. Mi enfoque está en la optimización de consultas, modelado de datos y gestión de grandes volúmenes de información, asegurando integridad, seguridad y alto rendimiento en cada transacción."
+};
+
+// ==========================================
 // 2. REFERENCIAS AL DOM (Elementos de HTML)
 // ==========================================
 // Aquí "agarramos" los elementos de la página para poder controlarlos.
@@ -271,6 +280,9 @@ const backIntroBtn = document.getElementById('back-intro-btn');
 const contactBtn = document.getElementById('contact-btn');
 const contactModal = document.getElementById('contact-modal');
 const closeContact = document.getElementById('close-contact');
+const infoBtn = document.getElementById('info-btn');
+const infoModal = document.getElementById('info-modal');
+const closeInfo = document.getElementById('close-info');
 
 // Creamos un elemento div para el flash blanco/gris dinámicamente
 const flashOverlay = document.createElement('div');
@@ -357,7 +369,12 @@ contactBtn.addEventListener('click', () => { contactModal.classList.remove('hidd
 closeContact.addEventListener('click', () => { contactModal.classList.add('hidden'); });
 window.addEventListener('click', (e) => { // Cerrar si clic fuera
     if (e.target === contactModal) contactModal.classList.add('hidden');
+    if (e.target === infoModal) infoModal.classList.add('hidden');
 });
+
+// --- MODAL DE INFO ---
+infoBtn.addEventListener('click', () => { infoModal.classList.remove('hidden'); });
+closeInfo.addEventListener('click', () => { infoModal.classList.add('hidden'); });
 
 // --- BOTÓN VOLVER (De Proyectos al Hub) ---
 backBtn.addEventListener('click', () => {
@@ -401,6 +418,24 @@ function openDetails(category) {
     // 4. Construir el HTML dinámicamente
     let htmlContent = `<h2 style="margin-bottom:20px; color:white;">Proyectos de ${category.toUpperCase()}</h2>`;
 
+    // --- SECCIÓN ABOUT ME ---
+    if (aboutMeData[category]) {
+        // Deducir color basado en la categoría para el borde
+        let borderColor = 'white';
+        if(category === 'gamedev') borderColor = 'var(--color-game)';
+        if(category === 'fullstack') borderColor = 'var(--color-stack)';
+        if(category === 'database') borderColor = 'var(--color-data)';
+
+        htmlContent += `
+            <div class="about-section" style="margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; border-left: 4px solid ${borderColor};">
+                <h3 style="margin-bottom: 10px; color: white; font-family: 'Outfit', sans-serif;">Sobre este perfil</h3>
+                <p style="color: #ccc; line-height: 1.6; font-size: 1.05rem;">
+                    ${aboutMeData[category]}
+                </p>
+            </div>
+        `;
+    }
+
     // CASO ESPECIAL: GAME DEV (Incluye el juego Snake)
     if (category === 'gamedev') {
         htmlContent += `<div class="gamedev-container">`;
@@ -429,6 +464,16 @@ function openDetails(category) {
         // Columna Der: Mini Consola Snake
         htmlContent += `
             <div class="game-col">
+                <div class="community-msg">
+                    "Entre todos somos una comunidad, ayúdame a ampliar mi portafolio. Dándole play a este juego me ayudas a poblar una base de datos para mostrar mis habilidades. ¡Gracias por jugar!"
+                </div>
+                
+                <div class="difficulty-controls">
+                    <button class="diff-btn" onclick="setDiff(150, this)">EASY</button>
+                    <button class="diff-btn active" onclick="setDiff(100, this)">MID</button>
+                    <button class="diff-btn" onclick="setDiff(60, this)">HARD</button>
+                </div>
+
                 <div class="game-score">SCORE: <span id="score">0</span></div>
                 <canvas id="snake-canvas" width="300" height="300"></canvas>
                 <button id="start-game-btn" class="game-btn" style="display:block;">JUGAR</button>
@@ -512,12 +557,15 @@ function setupSnakeGame() {
 
     // Variables de control de tiempo (Game Loop)
     let dropCounter = 0;
-    let dropInterval = 100; // Velocidad del juego (ms por frame)
+    
+    // Nivel de dificultad (velocidad)
+    // Usamos window.gameSpeed si existe (seteado por los botones), si no default 100
+    let dropInterval = window.gameSpeed || 100; 
 
     // Datos para Analítica (Database Profile Feature)
     let startTime = 0;
     let movesCount = 0;
-    let maxSpeed = 100;
+    let maxSpeed = dropInterval; // La velocidad es constante ahora
     let deathReason = "";
 
     // ESCUCHAR TECLADO
@@ -608,9 +656,9 @@ function setupSnakeGame() {
                         validPos = !collision({x:food.x, y:food.y}, snake);
                     }
 
-                    // Aumentar dificultad (Velocidad)
-                    if(dropInterval > 60) dropInterval -= 1;
-                    if (dropInterval < maxSpeed) maxSpeed = dropInterval;
+                    // Ahora la velocidad es fija según dificultad, no aumenta sola
+                    // if(dropInterval > 60) dropInterval -= 1; 
+                    // if (dropInterval < maxSpeed) maxSpeed = dropInterval;
 
                 } else {
                     snake.pop(); // Si no comemos, quitamos la cola para avanzar
@@ -637,54 +685,88 @@ function setupSnakeGame() {
             }
         }
 
-        // --- DIBUJAR TODO (RENDER) ---
-        ctx.fillStyle = "#050505"; // Fondo negro
+        // --- DIBUJAR TODO (RENDER CYBER) ---
+        
+        // 1. Limpiar pantalla
+        ctx.fillStyle = "#05080a"; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Dibujar Grid Verde estilo CRT
-        ctx.strokeStyle = "#111";
+        // 2. Dibujar Grid Holográfico
+        ctx.strokeStyle = "#1a2a22";
         ctx.lineWidth = 1;
         for(let i=0; i<canvas.width; i+=box) {
             ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i, canvas.height); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width, i); ctx.stroke();
         }
 
-        // Dibujar Comida (con efecto pulsante)
-        food.pulse += 0.1;
-        const glowSize = 15 + Math.sin(food.pulse) * 5;
-        ctx.shadowBlur = glowSize;
+        // 3. Dibujar Comida (Hexágono Pulsante)
+        food.pulse += 0.15;
+        const glow = 15 + Math.sin(food.pulse) * 8;
+        
+        ctx.shadowBlur = glow;
         ctx.shadowColor = "#ff00cc";
         ctx.fillStyle = "#ff00cc";
-        ctx.fillRect(food.x + 2, food.y + 2, box - 4, box - 4);
-        ctx.shadowBlur = 0;
+        
+        // Dibujamos un círculo en vez de cuadrado para la "energía"
+        ctx.beginPath();
+        let foodCenterX = food.x + box/2;
+        let foodCenterY = food.y + box/2;
+        ctx.arc(foodCenterX, foodCenterY, box/2 - 2, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset sombra
 
-        // Dibujar Serpiente
+        // 4. Dibujar Serpiente (Segmentada)
         for(let i = 0; i < snake.length; i++) {
-            // Cabeza blanca brillante, cuerpo verde
+            let sX = snake[i].x;
+            let sY = snake[i].y;
+
+            // Cabeza
             if (i === 0) {
-                ctx.shadowBlur = 20;
+                ctx.shadowBlur = 15;
                 ctx.shadowColor = "#00ff9d";
-                ctx.fillStyle = "#fff";
+                ctx.fillStyle = "#ffffff";
+                
+                // Forma de cabeza un poco redondeada
+                ctx.beginPath();
+                ctx.roundRect(sX, sY, box, box, 5);
+                ctx.fill();
+                
+                // Ojos (para saber dirección)
+                ctx.fillStyle = "#000";
+                // Lógica simple para ojos según dirección podría ir aquí, 
+                // pero por simplicidad dejamos dos puntos negros
+                ctx.beginPath();
+                ctx.arc(sX + 6, sY + 6, 2, 0, Math.PI*2);
+                ctx.arc(sX + 14, sY + 6, 2, 0, Math.PI*2);
+                ctx.fill();
+
             } else {
-                ctx.shadowBlur = 0;
+                // Cuerpo con gradiente o color sólido neón
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = "rgba(0, 255, 157, 0.5)";
                 ctx.fillStyle = "#00ff9d";
+                
+                // Segmento un poquito más pequeño que la caja para dar efecto "spine"
+                ctx.fillRect(sX + 2, sY + 2, box - 4, box - 4);
             }
-            ctx.fillRect(snake[i].x, snake[i].y, box, box);
         }
 
-        // Dibujar Partículas
+        // 5. Dibujar Partículas
         particles.forEach((p, index) => {
             p.x += p.vx;
             p.y += p.vy;
-            p.life -= 0.03;
+            p.life -= 0.05;
 
             if(p.life <= 0) {
                 particles.splice(index, 1);
             } else {
                 ctx.globalAlpha = p.life;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color;
                 ctx.fillStyle = p.color;
                 ctx.fillRect(p.x, p.y, p.size, p.size);
                 ctx.globalAlpha = 1.0;
+                ctx.shadowBlur = 0;
             }
         });
 
@@ -704,7 +786,12 @@ function setupSnakeGame() {
         setTimeout(() => {
             const name = prompt("¡Juego Terminado! 🎮\nIngresa tu alias para guardar tu récord:", "Jugador 1");
             if(name) {
-                sendDataToBackend(name, score, duration, movesCount, maxSpeed, deathReason);
+                // Determinar string de dificultad basado en gameSpeed
+                let diffLabel = "MEDIUM";
+                if(window.gameSpeed >= 150) diffLabel = "EASY";
+                if(window.gameSpeed <= 60) diffLabel = "HARD";
+
+                sendDataToBackend(name, score, duration, movesCount, maxSpeed, deathReason, diffLabel);
             }
         }, 100);
     }
@@ -748,7 +835,7 @@ function setupSnakeGame() {
     const API_URL = "https://unfriable-pressor-alba.ngrok-free.dev/mi-portafolio/api/save_score.php"; 
 
     // Función asíncrona para enviar los datos
-    async function sendDataToBackend(name, score, duration, moves, speed, death) {
+    async function sendDataToBackend(name, score, duration, moves, speed, death, difficulty) {
         
         // Verificación de seguridad para avisarte si no estás en servidor
         const isFile = window.location.protocol === 'file:';
@@ -766,6 +853,7 @@ function setupSnakeGame() {
             moves_count: moves,
             max_speed_ms: speed,
             death_type: death,
+            difficulty: difficulty,
             platform: navigator.platform 
         };
         
@@ -789,3 +877,20 @@ function setupSnakeGame() {
         }
     }
 }
+
+// ==========================================
+// 8. HELPERS GLOBALES (Dificultad)
+// ==========================================
+window.gameSpeed = 100; // Por defecto Medio
+
+window.setDiff = function(speed, btn) {
+    window.gameSpeed = speed;
+    
+    // Actualizar UI
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Enfocar el canvas para que no haya que hacer clic para jugar
+    const canvas = document.getElementById('snake-canvas');
+    if(canvas) canvas.focus();
+};
