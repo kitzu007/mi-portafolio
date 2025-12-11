@@ -406,7 +406,7 @@ p {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(10, 10, 10, 0.95); /* Casi opaco */
+    background: rgba(5, 5, 10, 0.6); /* Transparente para ver el "Ecosistema" de fondo */
     backdrop-filter: blur(10px);
     z-index: 2000; /* Encima de todo */
     display: flex;
@@ -416,35 +416,82 @@ p {
     transition: opacity 0.8s ease, visibility 0.8s;
 }
 
+/* NUEVO: Tarjeta de Cristal (Glassmorphism) */
 .intro-content {
-    max-width: 600px;
-    padding: 2rem;
+    max-width: 650px;
+    padding: 3rem;
+    
+    /* Efecto Cristal Mejorado */
+    background: rgba(30, 30, 35, 0.4); /* Más claro para contraste */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15); /* Borde más visible */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    border-radius: 20px;
+    
     animation: slideUp 0.8s ease-out;
 }
 
+/* Animación de Flotar para la foto */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+
 .intro-img-box img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 3px solid var(--color-game);
-    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
-    margin-bottom: 1.5rem;
+    /* ... propiedades anteriores se mantienen si no se sobrescriben, pero ajustamos la animación */
+    animation: float 6s ease-in-out infinite; 
 }
 
-.intro-title {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(to right, #fff, var(--color-stack));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+/* Estilos de las Píldoras de Habilidad */
+.intro-skills {
+    display: flex;
+    justify-content: center;
+    gap: 2rem; /* Más espacio entre botones */
+    margin-top: 3rem; /* SEPARACIÓN EXTRA DEL TEXTO */
+    margin-bottom: 3rem;
+    flex-wrap: wrap; 
 }
 
-.intro-desc {
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
-    margin-bottom: 2.5rem;
-    line-height: 1.6;
+.skill-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1rem 2rem; /* Más grandes */
+    background: rgba(255, 255, 255, 0.1); /* Fondo más visible */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    color: #fff; /* Texto blanco puro */
+    font-size: 1rem; /* Texto más grande */
+    font-weight: 600;
+    cursor: default;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra suave */
+}
+
+.skill-pill i { font-size: 1.2rem; }
+
+/* HOVER EFFECTS: Cada uno brilla con su color */
+.game-pill:hover {
+    border-color: var(--color-game);
+    color: var(--color-game);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+    transform: translateY(-3px);
+}
+
+.stack-pill:hover {
+    border-color: var(--color-stack);
+    color: var(--color-stack);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    transform: translateY(-3px);
+}
+
+.data-pill:hover {
+    border-color: var(--color-data);
+    color: var(--color-data);
+    box-shadow: 0 0 15px rgba(255, 85, 0, 0.4);
+    transform: translateY(-3px);
 }
 
 .neon-btn {

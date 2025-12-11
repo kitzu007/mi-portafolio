@@ -82,19 +82,65 @@ const columns = document.querySelectorAll('.split-item');
 // ==========================================
 
 // 1. Configuración Base (Pantalla Principal)
+// 1. Configuración Base (Ecosistema Digital Unificado)
 const landingParticles = {
     particles: {
-        number: { value: 60, density: { enable: true, value_area: 800 } },
-        color: { value: "#ffffff" },
-        opacity: { value: 0.2, random: true },
-        size: { value: 3 },
-        move: { enable: true, speed: 1, direction: "none", random: true, out_mode: "out" },
-        line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.1, width: 1 }
+        number: { value: 120, density: { enable: true, value_area: 800 } }, // Más partículas
+        color: { 
+            value: ["#00ff9d", "#00f3ff", "#ff5500", "#bf00ff"] 
+        },
+        shape: { 
+            type: ["circle", "triangle", "edge", "char"], 
+            character: {
+                value: ["{ }", "< >", "</>", "0", "1", "★", "⚡"], // Añadido más símbolos
+                font: "Verdana",
+                style: "",
+                weight: "bold", // Más grueso
+                fill: true
+            }
+        },
+        opacity: { 
+            value: 0.8, // Mucho más visible
+            random: true, 
+            anim: { enable: true, speed: 1, opacity_min: 0.3, sync: false } 
+        },
+        size: { 
+            value: 6, // Más grandes
+            random: true, 
+            anim: { enable: true, speed: 3, size_min: 2, sync: false } 
+        },
+        line_linked: { 
+            enable: true, 
+            distance: 180, // Conexiones más largas
+            color: "#ffffff", 
+            opacity: 0.3, // Líneas más visibles
+            width: 1.5 
+        },
+        move: { 
+            enable: true, 
+            speed: 2, // Un poco más rápido
+            direction: "none", 
+            random: true, 
+            out_mode: "out", 
+            attract: { enable: false, rotateX: 600, rotateY: 1200 } 
+        }
     },
     interactivity: {
-        events: { onhover: { enable: true, mode: "grab" } },
-        modes: { grab: { distance: 140, line_linked: { opacity: 0.5 } } }
-    }
+        detect_on: "canvas",
+        events: { 
+            onhover: { enable: true, mode: "bubble" }, // Efecto burbuja al pasar el mouse
+            onclick: { enable: true, mode: "push" },
+            resize: true 
+        },
+        modes: { 
+            grab: { distance: 400, line_linked: { opacity: 1 } },
+            bubble: { distance: 200, size: 6, duration: 2, opacity: 0.8, speed: 3 },
+            repulse: { distance: 200, duration: 0.4 },
+            push: { particles_nb: 4 },
+            remove: { particles_nb: 2 }
+        }
+    },
+    retina_detect: true
 };
 
 // 2. Efecto VIDEOJUEGOS (Cuadrados Pixel Art que caen)
