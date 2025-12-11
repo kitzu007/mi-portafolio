@@ -479,6 +479,14 @@ function openDetails(category) {
                 <button id="start-game-btn" class="game-btn" style="display:block;">JUGAR</button>
                 <p class="game-instructions">Usa las flechas del teclado ⬆️⬇️⬅️➡️</p>
                 <p id="game-over-msg" style="color:red; display:none; font-family:'Press Start 2P'; margin-top:10px;">GAME OVER</p>
+                
+                <!-- D-PAD MÓVIL INYECTADO -->
+                <div class="mobile-controls">
+                    <button class="pad-btn btn-up" data-dir="UP"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button class="pad-btn btn-left" data-dir="LEFT"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="pad-btn btn-down" data-dir="DOWN"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button class="pad-btn btn-right" data-dir="RIGHT"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
             </div>
         `;
         htmlContent += `</div>`; 
@@ -602,7 +610,34 @@ function setupSnakeGame() {
                 movesCount++; 
             }
         }
+
     }
+
+    // LISTENER TÁCTIL (Móviles)
+    document.querySelectorAll('.pad-btn').forEach(btn => {
+        // Usamos 'touchstart' y 'click' para mejor respuesta
+        const action = (e) => {
+           if (!gameRunning) return;
+           e.preventDefault(); // Evitar zoom/scroll
+           const dir = btn.dataset.dir;
+           
+           // Replicamos la lógica de input
+           const lastDir = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : d;
+           if (dir === "LEFT" && lastDir === "RIGHT") return;
+           if (dir === "RIGHT" && lastDir === "LEFT") return;
+           if (dir === "UP" && lastDir === "DOWN") return;
+           if (dir === "DOWN" && lastDir === "UP") return;
+           if (dir === lastDir) return;
+
+           if (inputQueue.length < 3) {
+               inputQueue.push(dir);
+               movesCount++; 
+           }
+        };
+
+        btn.addEventListener('touchstart', action, {passive: false});
+        btn.addEventListener('click', action);
+    });
 
     // Efecto de partículas al comer
     function createExplosion(x, y, color) {

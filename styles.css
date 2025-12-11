@@ -463,7 +463,83 @@ p {
         transform: translateY(0);
         margin-top: 1rem;
     }
+    
+    /* FIX: Permitir scroll en móvil */
+    body {
+        overflow: auto; /* IMPORTANTE: Desbloquear scroll */
+        height: auto;
+    }
+    .split-container {
+        height: auto;
+        overflow: visible;
+        padding-bottom: 50px;
+    }
+
+    /* FIX: Intro Screen scrollable en móvil */
+    .intro-overlay {
+        display: block; /* En vez de flex para permitir scroll nativo vertical */
+        padding-top: 50px;
+    }
+    .intro-content {
+        margin: 0 auto;
+        width: 90%;
+        margin-bottom: 50px;
+    }
+
+    /* FIX: Game Col fluido en móvil */
+    .game-col {
+        position: static; /* Ya no stick, para que fluya */
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        box-sizing: border-box; 
+    }
+    
+    /* Ajustar canvas al ancho de pantalla */
+    #snake-canvas {
+        max-width: 100%;
+        height: auto;
+    }
 }
+
+/* CONTROLES TÁCTILES (D-PAD) */
+.mobile-controls {
+    display: none; /* Oculto en PC */
+    grid-template-areas: 
+        ". up ."
+        "left down right";
+    gap: 10px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1100px) {
+    .mobile-controls {
+        display: grid; /* Mostrar en tablet/móvil */
+    }
+}
+
+.pad-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--color-game);
+    color: var(--color-game);
+    width: 50px; height: 50px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: manipulation; /* Evitar zoom doble clic */
+}
+.pad-btn:active {
+    background: var(--color-game);
+    color: #000;
+}
+.btn-up { grid-area: up; }
+.btn-left { grid-area: left; }
+.btn-down { grid-area: down; }
+.btn-right { grid-area: right; }
 
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -485,6 +561,8 @@ p {
     align-items: center;
     text-align: center;
     transition: opacity 0.8s ease, visibility 0.8s;
+    overflow-y: auto; /* FIX: Permitir scroll si el contenido es alto */
+    padding: 20px 0; /* Espacio para que no corte bordes */
 }
 
 /* Tarjeta de Cristal (Glassmorphism) */
