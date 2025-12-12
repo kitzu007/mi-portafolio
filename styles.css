@@ -860,6 +860,7 @@ p {
 /* Slider de Volumen VERTICAL */
 #volume-slider {
     -webkit-appearance: none;
+    appearance: none;
     width: 80px; 
     height: 4px;
     background: #333;
@@ -894,8 +895,6 @@ p {
     color: #000;
     transform: scale(1.1);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    overflow: hidden; /* Importante para que la imagen no se salga al hacer zoom */
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .floating-info:hover {
