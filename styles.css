@@ -750,9 +750,10 @@ p {
 .floating-back { left: 30px; }
 
 /* Nuevo Botón Info debajo del de contacto */
+/* Nuevo Botón Info debajo del de contacto */
 .floating-info {
     position: fixed;
-    top: 100px; /* Debajo del anterior (30px + 60px size + 10px margen) */
+    top: 100px; /* Consistente con la redefinición */
     right: 30px;
     width: 60px; height: 60px;
     border-radius: 50%;
@@ -769,17 +770,175 @@ p {
     transition: all 0.3s;
 }
 
-.floating-contact:hover, .floating-back:hover, .floating-info:hover {
+/* Botón de Sonido */
+/* Panel de Sonido (Expandable) */
+.floating-sound-panel {
+    position: fixed;
+    top: 170px; 
+    right: 30px;
+    background: rgba(10, 10, 12, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Borde por defecto */
+    border-radius: 30px; 
+    z-index: 1500;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    height: 60px; 
+    width: 60px;
+}
+
+/* Estado MUTE (Borde Rojo) */
+.floating-sound-panel.muted {
+    border-color: #ff5555;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+}
+
+/* Estado ACTIVO (Borde Verde) */
+.floating-sound-panel.active {
+    border-color: var(--color-game);
+}
+
+.floating-sound-panel:hover, .floating-sound-panel.active-expand {
+    height: 240px; /* Un poco más alto para que quepa todo bien */
+    background: rgba(0, 0, 0, 0.95);
+}
+
+/* Boton Info Flotante (Ajuste de posición para no chocar) */
+.floating-info {
+    top: 100px; /* 30px (Contact) + 60px (Size) + 10px (Gap) */
+    right: 30px;
+    z-index: 1550; 
+}
+
+.panel-main-btn {
+    width: 60px; height: 60px;
+    background: transparent;
+    border: none;
+    color: #ff5555; 
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 10; 
+    margin-bottom: 25px; /* MÁS Espacio (Icono vs Slider) */
+}
+
+.floating-sound-panel.active .panel-main-btn {
+    color: var(--color-game);
+}
+
+.sound-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    padding-bottom: 20px;
+    opacity: 0; 
+    transition: opacity 0.3s 0.1s; 
+}
+
+.floating-sound-panel:hover .sound-controls, .floating-sound-panel.active-expand .sound-controls {
+    opacity: 1;
+}
+
+.vol-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+    height: 100px; /* Mas altura para la rotacion */
+    justify-content: center;
+    position: relative;
+}
+
+/* Slider de Volumen VERTICAL */
+#volume-slider {
+    -webkit-appearance: none;
+    width: 80px; 
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    outline: none;
+    transform: rotate(-90deg); 
+    margin: 0; /* Margin handled by container height */
+}
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--color-game);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--color-game);
+}
+
+/* El icono de nota musical (Lo ocultamos si estorba o lo ponemos absoluto) */
+.small-icon { 
+    position: absolute;
+    top: -15px; /* Arriba del slider */
+    font-size: 0.8rem; 
+    color: #666; 
+    z-index: 0;
+}
+
+.small-text { font-size: 0.6rem; font-weight: bold; letter-spacing: 1px;}
+#sfx-toggle { accent-color: var(--color-game); cursor: pointer; transform: scale(0.9); }
+
+.floating-contact:hover, .floating-back:hover, .floating-info:hover, .floating-sound:hover {
     background: var(--color-text-main);
     color: #000;
     transform: scale(1.1);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    overflow: hidden; /* Importante para que la imagen no se salga al hacer zoom */
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .floating-info:hover {
     background: var(--color-stack);
     color: #000;
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+}
+
+/* IMAGEN DE FONDO DE SECCIÓN */
+.section-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.2; /* Sutil, para que se vea el color de fondo también */
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 0;
+    filter: grayscale(100%); /* Opcional: Para que tome el tinte del color de la sección */
+}
+
+/* EFECTO HOVER: Color y Zoom */
+.split-item:hover .section-bg {
+    transform: scale(1.1);
+    opacity: 0.4;
+    filter: grayscale(0%); /* Vuelve el color real */
+}
+
+.content {
+    text-align: center;
+    position: relative;
+    z-index: 2; /* Texto arriba de todo */
+    transform: translateY(20px);
+    transition: transform 0.3s;
+}
+
+.overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    /* Gradiente para que el texto se lea bien abajo */
+    background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+    z-index: 1; /* Encima de la imagen, debajo del texto */
+    transition: background 0.3s;
 }
 
 /* MODAL OSCURO */

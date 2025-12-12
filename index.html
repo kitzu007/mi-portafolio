@@ -95,6 +95,28 @@
         <i class="fa-solid fa-question"></i>
     </button>
 
+
+
+    <!-- Panel de Control de Sonido -->
+    <div id="sound-panel" class="floating-sound-panel">
+        <!-- Botón Principal (Mute/Unmute) -->
+        <button id="sound-main-btn" class="panel-main-btn">
+            <i class="fa-solid fa-volume-xmark"></i>
+        </button>
+        
+        <!-- Controles Desplegables -->
+        <div class="sound-controls">
+            <div class="vol-control">
+                <i class="fa-solid fa-music small-icon"></i>
+                <input type="range" id="volume-slider" min="0" max="100" value="30" title="Volumen General">
+            </div>
+            <div class="sfx-control">
+                <span class="small-text">SFX</span>
+                <input type="checkbox" id="sfx-toggle" checked title="Efectos de Sonido">
+            </div>
+        </div>
+    </div>
+
     <!-- 6. MODAL DE CONTACTO (Ventana emergente) -->
     <div id="contact-modal" class="modal-overlay hidden">
         <div class="modal-content contact-box">
@@ -162,22 +184,27 @@
         
         <!-- COLUMNA 1: Game Dev (Verde) -->
         <div class="split-item game" data-section="gamedev">
+            <!-- IMAGEN DE FONDO -->
+            <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=900&auto=format&fit=crop" class="section-bg" alt="Game Dev Background">
+            
             <div class="content">
                 <i class="fa-solid fa-gamepad icon-large"></i>
                 <h2>Game Developer</h2>
                 <p>Unity & Unreal Engine</p>
                 <button class="explore-btn">Explorar</button>
             </div>
-            <!-- Capa oscura para que el texto resalte -->
             <div class="overlay"></div>
         </div>
 
         <!-- COLUMNA 2: Full Stack (Azul) -->
         <div class="split-item stack" data-section="fullstack">
+            <!-- IMAGEN DE FONDO -->
+            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=900&auto=format&fit=crop" class="section-bg" alt="Full Stack Background">
+
             <div class="content">
                 <i class="fa-solid fa-code icon-large"></i>
-                <h2>Full Stack Dev</h2>
-                <p>React & Node.js</p>
+                <h2>Full Stack</h2>
+                <p>React, Node.js & Modern Web</p>
                 <button class="explore-btn">Explorar</button>
             </div>
             <div class="overlay"></div>
@@ -185,10 +212,13 @@
 
         <!-- COLUMNA 3: Database (Naranja) -->
         <div class="split-item data" data-section="database">
+            <!-- IMAGEN DE FONDO (Modern Tech) -->
+            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=900&auto=format&fit=crop" class="section-bg" alt="Database Background">
+
             <div class="content">
                 <i class="fa-solid fa-database icon-large"></i>
-                <h2>Database Specialist</h2>
-                <p>SQL & NoSQL</p>
+                <h2>Database</h2>
+                <p>Big Data & SQL/NoSQL</p>
                 <button class="explore-btn">Explorar</button>
             </div>
             <div class="overlay"></div>

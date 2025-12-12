@@ -1,26 +1,342 @@
 // ==========================================
 // 1. BASE DE DATOS DE PROYECTOS (Simulada)
 // ==========================================
+
+// --- SISTEMA DE AUDIO (SoundManager) ---
+class SoundManager {
+    constructor() {
+        this.ctx = null;
+        this.muted = true; 
+        this.masterGain = null;
+        this.musicGain = null; // Nuevo: Volumen SOLO para música
+        this.sfxEnabled = true; 
+        this.ambienceNodes = []; 
+        this.currentMusicVol = 0.5; // Volumen de música (independiente)
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+            
+            // 1. Nodo Maestro (Mute global)
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = 0.3; 
+            this.masterGain.connect(this.ctx.destination);
+
+            // 2. Nodo Música (Controlado por slider)
+            this.musicGain = this.ctx.createGain();
+            this.musicGain.gain.value = this.currentMusicVol;
+            this.musicGain.connect(this.masterGain);
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    }
+
+    // Actualizar Volumen de MÚSICA (Slider)
+    setMusicVolume(val) {
+        this.currentMusicVol = val; 
+        if(this.musicGain && !this.muted) {
+            this.musicGain.gain.setTargetAtTime(val, this.ctx.currentTime, 0.1);
+        }
+    }
+
+    // Toggle SFX
+    toggleSFX(state) {
+        this.sfxEnabled = state;
+    }
+
+    toggleMute() {
+        this.init(); 
+        this.muted = !this.muted;
+        
+        const panel = document.getElementById('sound-panel');
+        const mainBtn = document.getElementById('sound-main-btn');
+
+        if (mainBtn) {
+            if (this.muted) {
+                panel.classList.remove('active');
+                panel.classList.add('muted'); // Borde ROJO
+                
+                mainBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                mainBtn.style.color = '#ff5555';
+                if(this.masterGain) this.masterGain.gain.value = 0; // Silencio total
+                this.stopAmbience(); 
+            } else {
+                panel.classList.remove('muted');
+                panel.classList.add('active'); // Borde VERDE
+                
+                mainBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                mainBtn.style.color = 'var(--color-game)';
+                if(this.masterGain) this.masterGain.gain.value = 0.3; // Volver a nivel maestro normal
+                this.playTone(600, 'sine', 0.1); 
+                this.startAmbience(); 
+            }
+        }
+    }
+
+    // --- MÚSICA DE FONDO (Generative Ambient System) ---
+    startAmbience() {
+        if (this.ambienceNodes.length > 0) return; 
+
+        const now = this.ctx.currentTime;
+        
+        // 1. EL "COLCHÓN" (Pad)
+        const padFreqs = [87.31, 130.81, 174.61, 220.00]; 
+        
+        padFreqs.forEach((f) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+            
+            osc.type = 'sine'; 
+            osc.frequency.value = f;
+            
+            filter.type = 'lowpass';
+            filter.frequency.value = 600;
+            
+            const lfo = this.ctx.createOscillator();
+            lfo.type = 'sine';
+            lfo.frequency.value = 0.05 + Math.random() * 0.02;
+            const lfoGain = this.ctx.createGain();
+            lfoGain.gain.value = 0.015;
+            lfo.connect(lfoGain);
+            lfoGain.connect(gain.gain);
+
+            gain.gain.value = 0.03; 
+
+            osc.connect(filter);
+            filter.connect(gain);
+            // CONEXIÓN CLAVE: Conectamos a musicGain, no masterGain directo
+            gain.connect(this.musicGain); 
+            
+            osc.start(now);
+            lfo.start(now);
+            
+            this.ambienceNodes.push({ osc, gain, lfo, lfoGain, filter, type: 'pad' });
+        });
+
+        // 2. LA MELODÍA (Generative Arpeggiator)
+        const scale = [349.23, 392.00, 440.00, 523.25, 587.33, 659.25, 698.46]; 
+        
+        const playNote = () => {
+            if (!this.ctx || this.muted || this.ambienceNodes.length === 0) return;
+
+            const noteFreq = scale[Math.floor(Math.random() * scale.length)];
+            
+            if(Math.random() > 0.3) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(noteFreq, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + 0.1); 
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 4); 
+
+                osc.connect(gain);
+                // CONEXIÓN CLAVE: Melodía también a musicGain
+                gain.connect(this.musicGain);
+                
+                osc.start(this.ctx.currentTime);
+                osc.stop(this.ctx.currentTime + 4);
+            }
+
+            const nextTime = (Math.random() * 3000) + 2000;
+            this.melodyTimeout = setTimeout(playNote, nextTime);
+        };
+        playNote(); 
+    }
+
+    stopAmbience() {
+        // Parar osciladores del pad
+        this.ambienceNodes.forEach(node => {
+            if(node.type === 'pad') {
+                node.gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2);
+                node.osc.stop(this.ctx.currentTime + 2);
+                node.lfo.stop(this.ctx.currentTime + 2);
+            }
+        });
+        
+        // Limpiar timeout de melodía
+        if(this.melodyTimeout) clearTimeout(this.melodyTimeout);
+        
+        this.ambienceNodes = [];
+    }
+
+    playTone(freq, type, duration, vol = 1) {
+        // Verificar Mute con SFX flag
+        if (this.muted || !this.ctx || !this.sfxEnabled) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol * 0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+
+    playHover() { this.playTone(800, 'sine', 0.05, 0.2); }
+    playClick() { this.playTone(400, 'square', 0.1, 0.3); }
+    playBack() { this.playTone(200, 'sawtooth', 0.2, 0.3); }
+    
+    playSnakeEat() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.setValueAtTime(1200, now + 0.1); 
+        gain.gain.value = 0.2;
+        gain.gain.linearRampToValueAtTime(0, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(now + 0.3);
+    }
+
+    playSnakeDie() {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.linearRampToValueAtTime(50, now + 0.5); 
+        gain.gain.value = 0.4;
+        gain.gain.linearRampToValueAtTime(0, now + 0.5);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(now + 0.5);
+    }
+
+    // --- SONIDOS ESPECÍFICOS POR SECCIÓN ---
+    playGameDevOpen() {
+        // Estilo Arcade (Ya cubierto por playClick, pero lo reforzamos)
+        this.playTone(600, 'square', 0.1, 0.3);
+        setTimeout(() => this.playTone(800, 'square', 0.2, 0.3), 100);
+    }
+
+    playFullStackOpen() {
+        // Estilo Moderno y Serio (Glassy/Tech Ping)
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        
+        // Oscilador Principal (Tono puro y limpio)
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine'; 
+        
+        // Frecuencia fija pero elegante (ej. un Do alto o un La)
+        osc.frequency.setValueAtTime(800, now);
+        
+        // Envelope: Ataque instantáneo, caída suave (como una campana de cristal)
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.02); // Ataque rápido
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6); // Cola larga y suave
+        
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        
+        osc.start();
+        osc.stop(now + 0.6);
+
+        // Segundo Oscilador (Armónico para darle 'brillo')
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1200, now); // 5ta justa aprox
+        
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.linearRampToValueAtTime(0.1, now + 0.02);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        
+        osc2.connect(gain2);
+        gain2.connect(this.masterGain);
+        
+        osc2.start();
+        osc2.stop(now + 0.4);
+    }
+
+    playDatabaseOpen() {
+        // Estilo Procesamiento de Datos (Ráfaga rápida)
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        
+        // Ráfaga de 3 "paquetes" de datos
+        for(let i=0; i<3; i++) {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth'; // Sonido más "rugoso" digital
+            
+            const time = now + (i * 0.08);
+            osc.frequency.setValueAtTime(100 + (i*50), time);
+            
+            gain.gain.setValueAtTime(0.1, time);
+            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+            
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            
+            osc.start(time);
+            osc.stop(time + 0.05);
+        }
+    }
+}
+const audioSys = new SoundManager();
+
+// ==========================================
+// 1.5 SISTEMA DE PERSISTENCIA (State Manager)
+// ==========================================
+const saveState = (state) => {
+    localStorage.setItem('portfolioState', state);
+};
+
+const restoreState = () => {
+    const saved = localStorage.getItem('portfolioState');
+    if (!saved || saved === 'intro') return; // Comportamiento por defecto
+
+    // Si hay estado guardado, saltamos la intro
+    introScreen.style.display = 'none';
+    splitLanding.classList.remove('blurred');
+    splitLanding.classList.add('active');
+
+    if (saved === 'hub') {
+        // Ya estamos en el hub por las líneas anteriores
+    } else if (saved.startsWith('details:')) {
+        const category = saved.split(':')[1];
+        // Pequeño timeout para asegurar que el DOM esté listo
+        setTimeout(() => openDetails(category), 100);
+    }
+};
+
+
 // ¡Hola! Aquí es donde defines qué trabajos quieres mostrar al mundo.
 // Es como tu currículum, pero en formato de objetos JSON.
 const projectsData = [
     // --- VIDEOJUEGOS (Game Dev) ---
     {
         category: "gamedev",
-        title: "Neon Cyber-Racer",
-        description: "Arcade de carreras futurista con físicas de vehículos avanzadas y shaders personalizados.",
-        tags: ["Unity", "C#", "HLSL"],
-        image: "https://placehold.co/600x400/000/00ff9d?text=Cyber+Racer",
-        link: "#"
+        title: "Wind Mayhem",
+        description: "Juego creado para la game jam, Wind Mayhem es una experiencia salvaje que combina acción, precisión y pura creatividad en una colección de tres minijuegos, tan extraños como divertidos. En este juego me enfoque solo el el diseño de nivel del minijuego  Celestial Monk",
+        tags: ["Unity", "C#", "level design"],
+        image: "./assets/Wind Mayhem.png",
+        link: "https://tayronagames.itch.io/wind-mayhem"
     },
     {
         category: "gamedev",
-        title: "Dungeon Souls",
-        description: "RPG de acción roguelike. Generación procedimental de mazmorras e IA enemiga compleja.",
-        tags: ["Unreal Engine 5", "C++", "AI"],
-        image: "https://placehold.co/600x400/111/00ff9d?text=Dungeon+Souls",
-        link: "#"
+        title: "Downfall Protocol",
+        description: "En un mundo al borde del colapso, la humanidad lucha por adaptarse a un planeta donde las leyes de la gravedad ya no son lo que solían ser. Tras la destrucción de la Luna, la Tierra quedó condenada a una realidad inestable: fuerzas invisibles tiran y empujan en direcciones imposibles. Para sobrevivir, los humanos desarrollaron un dispositivo capaz de manipular la gravedad a voluntad… pero no todos lo usan para proteger. fui el encargado de todo lo relacionado con el diseño de la gravedad y la física del juego.",
+        tags: ["Unity", "C#", "level design", "physics"],
+        image: "./assets/Downfall Protocol.png",
+        link: "https://d1asu.itch.io/downfall-protocol"
     },
+    
     {
         category: "gamedev",
         title: "VR Space Odyssey",
@@ -180,6 +496,7 @@ const gameParticles = {
         line_linked: { enable: false } // Sin líneas, solo "lluvia"
     },
     interactivity: {
+        detect_on: "window",
         events: {
             onhover: { enable: true, mode: "repulse" }, // Se alejan de tu mouse
         },
@@ -199,6 +516,17 @@ const stackParticles = {
         size: { value: 3 },
         move: { enable: true, speed: 2, direction: "none", random: false, out_mode: "bounce" },
         line_linked: { enable: true, distance: 120, color: "#00f3ff", opacity: 0.4, width: 1 } // Red muy visible
+    },
+    interactivity: {
+        detect_on: "window",
+        events: {
+            onhover: { enable: true, mode: "grab" }, // Conectar nodos al mouse
+            onclick: { enable: true, mode: "push" }
+        },
+        modes: {
+            grab: { distance: 200, line_linked: { opacity: 0.8 } }, // Se iluminan las conexiones
+            push: { particles_nb: 3 }
+        }
     }
 };
 
@@ -211,6 +539,17 @@ const dataParticles = {
         opacity: { value: 0.8 },
         size: { value: 10 },
         move: { enable: true, speed: 1, direction: "top", random: true } // Suben hacia la "nube"
+    },
+    interactivity: {
+        detect_on: "window",
+        events: {
+            onhover: { enable: true, mode: "bubble" }, // "Magnificar" datos al pasar
+            onclick: { enable: true, mode: "repulse" }
+        },
+        modes: {
+            bubble: { distance: 150, size: 20, duration: 2, opacity: 1, speed: 3 }, // Se hacen grandes
+            repulse: { distance: 200, duration: 0.4 }
+        }
     }
 };
 
@@ -225,11 +564,42 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 2. Nos aseguramos que el fondo retro 3D esté apagado al principio
     if(retroBg) retroBg.classList.add('hidden');
+
+    // 3. Listener del PANEL DE SONIDO
+    const soundMainBtn = document.getElementById('sound-main-btn');
+    const volSlider = document.getElementById('volume-slider');
+    const sfxToggle = document.getElementById('sfx-toggle');
+
+    if(soundMainBtn) {
+        soundMainBtn.addEventListener('click', () => {
+            audioSys.toggleMute();
+        });
+    }
+
+    if(volSlider) {
+        volSlider.addEventListener('input', (e) => {
+            const val = e.target.value / 100; // 0 a 1
+            audioSys.setMusicVolume(val);
+        });
+    }
+
+    if(sfxToggle) {
+        sfxToggle.addEventListener('change', (e) => {
+            audioSys.toggleSFX(e.target.checked);
+        });
+    }
+
+    restoreState();
 });
 
 // --- INTERACCIÓN CON LAS 3 COLUMNAS DEL HUB ---
 columns.forEach(col => {
     
+    // SONIDO HOVER
+    col.addEventListener('mouseenter', () => {
+        audioSys.playHover();
+    });
+
     // A. EFECTO DE INCLINACIÓN 3D (TILT)
     // Hace que las tarjetas sigan a tu mouse.
     col.addEventListener('mousemove', (e) => {
@@ -267,6 +637,12 @@ columns.forEach(col => {
     // C. CLIC PARA ENTRAR A UNA SECCIÓN
     col.addEventListener('click', () => {
         const sectionType = col.dataset.section; // 'gamedev', 'fullstack' o 'database'
+        
+        // Reproducir sonido característico
+        if (sectionType === 'gamedev') audioSys.playGameDevOpen();
+        if (sectionType === 'fullstack') audioSys.playFullStackOpen();
+        if (sectionType === 'database') audioSys.playDatabaseOpen();
+
         openDetails(sectionType);
     });
 });
@@ -330,6 +706,9 @@ enterBtn.addEventListener('click', () => {
         }, 200); 
 
     }, 800); // Esto dura lo mismo que el zoom CSS
+
+    saveState('hub');
+    saveState('hub'); // Guardamos estado HUB
 });
 
 // --- VOLVER A LA PANTALLA DE INICIO (RESET) ---
@@ -362,6 +741,7 @@ backIntroBtn.addEventListener('click', () => {
             cancelAnimationFrame(gameAnimationFrame);
         }
     }
+    saveState('intro');
 });
 
 // --- MODAL DE CONTACTO ---
@@ -373,12 +753,16 @@ window.addEventListener('click', (e) => { // Cerrar si clic fuera
 });
 
 // --- MODAL DE INFO ---
-infoBtn.addEventListener('click', () => { infoModal.classList.remove('hidden'); });
-closeInfo.addEventListener('click', () => { infoModal.classList.add('hidden'); });
+if(infoBtn && infoModal && closeInfo) {
+    infoBtn.addEventListener('click', () => { infoModal.classList.remove('hidden'); });
+    closeInfo.addEventListener('click', () => { infoModal.classList.add('hidden'); });
+}
 
 // --- BOTÓN VOLVER (De Proyectos al Hub) ---
 backBtn.addEventListener('click', () => {
-    contentOverlay.classList.add('hidden'); 
+    saveState('hub');
+    contentOverlay.classList.add('hidden');  // Guardamos estado HUB
+    contentOverlay.classList.add('hidden');  
     splitLanding.style.display = 'flex'; 
     
     tsParticles.load("tsparticles", landingParticles); // Particles default
@@ -396,6 +780,7 @@ backBtn.addEventListener('click', () => {
 // 6. FUNCIÓN PARA ABRIR DETALLES (PROYECTOS)
 // ==========================================
 function openDetails(category) {
+    saveState(`details:${category}`); // Guardamos estado DETALLE
     // 1. Preparar escenario
     splitLanding.style.display = 'none';
     backIntroBtn.style.display = 'none'; 
@@ -418,7 +803,7 @@ function openDetails(category) {
     // 4. Construir el HTML dinámicamente
     let htmlContent = `<h2 style="margin-bottom:20px; color:white;">Proyectos de ${category.toUpperCase()}</h2>`;
 
-    // --- SECCIÓN ABOUT ME ---
+    // --- SECCIÓN ABOUT ME (CON EFECTO DE ESCRIBIR) ---
     if (aboutMeData[category]) {
         // Deducir color basado en la categoría para el borde
         let borderColor = 'white';
@@ -429,9 +814,8 @@ function openDetails(category) {
         htmlContent += `
             <div class="about-section" style="margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; border-left: 4px solid ${borderColor};">
                 <h3 style="margin-bottom: 10px; color: white; font-family: 'Outfit', sans-serif;">Sobre este perfil</h3>
-                <p style="color: #ccc; line-height: 1.6; font-size: 1.05rem;">
-                    ${aboutMeData[category]}
-                </p>
+                <!-- Aquí usaremos el efecto de máquina de escribir -->
+                <p id="typewriter-text" style="color: #ccc; line-height: 1.6; font-size: 1.05rem; min-height: 60px;"></p>
             </div>
         `;
     }
@@ -526,6 +910,12 @@ function openDetails(category) {
     // 6. Si es Game Dev, inicializar el juego
     if (category === 'gamedev') {
         setupSnakeGame();
+    }
+
+    // 7. INICIAR EFECTO DE ESCRITURA
+    if (aboutMeData[category]) {
+        const typeEl = document.getElementById('typewriter-text');
+        if(typeEl) typeWriter(typeEl, aboutMeData[category], 20);
     }
 }
 
@@ -682,6 +1072,7 @@ function setupSnakeGame() {
                     score++;
                     scoreEl.innerText = score;
                     createExplosion(food.x, food.y, "#ff00cc");
+                    audioSys.playSnakeEat(); // Sonido moneda
                     
                     // Nueva posición de comida (que no caiga en la serpiente)
                     let validPos = false;
@@ -705,6 +1096,7 @@ function setupSnakeGame() {
                 // 1. Chocar con paredes
                 if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height) {
                     deathReason = "wall";
+                    audioSys.playSnakeDie(); // Sonido muerte
                     gameOver();
                     return;
                 }
@@ -712,6 +1104,7 @@ function setupSnakeGame() {
                 // 2. Chocar consigo mismo
                 if(collision(newHead, snake)) {
                     deathReason = "self";
+                    audioSys.playSnakeDie(); // Sonido muerte
                     gameOver();
                     return; 
                 }
@@ -929,3 +1322,16 @@ window.setDiff = function(speed, btn) {
     const canvas = document.getElementById('snake-canvas');
     if(canvas) canvas.focus();
 };
+
+function typeWriter(element, text, speed) {
+    element.innerHTML = ""; 
+    let i = 0;
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    type();
+}
